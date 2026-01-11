@@ -1,53 +1,127 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>{{ app_name|default('.Blog') }}</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>{{ app_name|default('Blogify') }}</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="icon" href="{{ asset('icons/favicon.ico') }}">
-    {# Tailwind via CDN for quick styling #}
+    
+    {# Tailwind CSS + DaisyUI #}
+    <link href="https://cdn.jsdelivr.net/npm/daisyui@4.4.19/dist/full.min.css" rel="stylesheet" type="text/css" />
     <script src="https://cdn.tailwindcss.com"></script>
-    {# Include optional local JS (validation, small UI helpers) #}
-    <script src="{{ asset('js/validation.js') }}" defer></script>
+    
+    {# Alpine.js for interactivity #}
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    
+    {# Lucide Icons #}
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        teal: {
+                            50: '#f0fdfa',
+                            100: '#ccfbf1',
+                            500: '#14b8a6',
+                            600: '#0d9488',
+                            700: '#0f766e',
+                        },
+                        cyan: {
+                            500: '#06b6d4',
+                            600: '#0891b2',
+                        }
+                    }
+                }
+            },
+            daisyui: {
+                themes: ["light"],
+            }
+        }
+    </script>
+    <style>
+        body { font-family: 'Inter', sans-serif; }
+        [x-cloak] { display: none !important; }
+    </style>
 </head>
-<body class="bg-gray-100 h-screen antialiased leading-none font-sans">
-    <header class="bg-gray-800 py-6">
-        <div class="container mx-auto flex justify-between items-center px-6">
-            <div>
-                <a href="{{ path('app_home') }}" class="no-underline">
-                    <img src="{{ asset('logo/logo.png') }}" alt="{{ app_name|default('.Blog') }}" class="h-10">
+<body class="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
+    <header class="bg-white/90 backdrop-blur-md border-b border-gray-200 sticky top-0 z-50">
+        <div class="container mx-auto px-4 h-16 flex items-center justify-between">
+            <div class="flex items-center gap-8">
+                <a href="{{ path('app_home') }}" class="flex items-center gap-2 no-underline text-teal-600 hover:text-teal-700 transition">
+                    <i data-lucide="pen-tool" class="w-6 h-6"></i>
+                    <span class="font-bold text-xl tracking-tight text-gray-900">Blogify</span>
                 </a>
+                
+                <nav class="hidden md:flex items-center gap-6 text-sm font-medium text-gray-600">
+                    <a href="{{ path('app_home') }}" class="hover:text-teal-600 transition">Home</a>
+                    <a href="{{ path('blog_index') }}" class="hover:text-teal-600 transition">Blog</a>
+                </nav>
             </div>
-            <nav class="space-x-4 text-gray-300 text-sm sm:text-base">
-                <a class="no-underline hover:underline" href="{{ path('app_home') }}">Home</a>
-                <a class="no-underline hover:underline" href="{{ path('blog_index') }}">Blog</a>
+
+            <div class="flex items-center gap-4">
                 {% if app.user %}
-                    <span>{{ app.user.username ?? app.user.email }}</span>
+                    <div class="dropdown dropdown-end" x-data>
+                        <div tabindex="0" role="button" class="btn btn-ghost btn-circle avatar placeholder">
+                            <div class="bg-teal-100 text-teal-700 rounded-full w-10">
+                                <span class="text-lg font-semibold">{{ app.user.email|first|upper }}</span>
+                            </div>
+                        </div>
+                        <ul tabindex="0" class="mt-3 z-[1] p-2 shadow-lg menu menu-sm dropdown-content bg-base-100 rounded-box w-52 border border-gray-100">
+                             <li class="menu-title px-4 py-2 text-xs text-gray-400 uppercase font-bold">
+                                {{ app.user.email }}
+                            </li>
+                            {% if is_granted('ROLE_ADMIN') %}
+                                <li><a href="{{ path('admin_dashboard') }}"><i data-lucide="layout-dashboard" class="w-4 h-4"></i> Admin Dashboard</a></li>
+                            {% endif %}
+                            {% if is_granted('ROLE_AUTHOR') %}
+                                <li><a href="{{ path('author_dashboard') }}"><i data-lucide="pen-square" class="w-4 h-4"></i> Author Dashboard</a></li>
+                            {% endif %}
+                            <li><a><i data-lucide="user" class="w-4 h-4"></i> Profile</a></li>
+                            <div class="divider my-1"></div>
+                            <li><a href="{{ path('app_logout') }}" class="text-red-600 hover:bg-red-50"><i data-lucide="log-out" class="w-4 h-4"></i> Logout</a></li>
+                        </ul>
+                    </div>
                 {% else %}
-                    <a class="no-underline hover:underline" href="{{ path('app_login') }}">Sign In</a>
-                    <a class="no-underline hover:underline" href="{{ path('app_register') }}">Sign Up</a>
+                    <a href="{{ path('app_login') }}" class="btn btn-ghost btn-sm font-medium">Sign In</a>
+                    <a href="{{ path('app_register') }}" class="btn btn-primary btn-sm bg-teal-600 hover:bg-teal-700 border-none text-white font-medium">Get Started</a>
                 {% endif %}
-            </nav>
+            </div>
         </div>
     </header>
 
-    <div class="min-h-screen">
-        <div class="container mx-auto px-4 py-6">
-            {% for label, messages in app.flashes %}
-                {% for message in messages %}
-                    <div class="mb-4 p-3 rounded {{ label == 'error' ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800' }}">
-                        {{ message }}
-                    </div>
-                {% endfor %}
+    <main class="flex-grow container mx-auto px-4 py-8">
+        {% for label, messages in app.flashes %}
+            {% for message in messages %}
+                <div x-data="{ show: true }" x-show="show" x-transition.opacity.duration.500ms x-init="setTimeout(() => show = false, 5000)" class="alert {{ label == 'error' ? 'alert-error' : 'alert-success' }} mb-6 shadow-sm rounded-lg">
+                    <i data-lucide="{{ label == 'error' ? 'alert-circle' : 'check-circle' }}" class="w-6 h-6"></i>
+                    <span>{{ message }}</span>
+                </div>
             {% endfor %}
+        {% endfor %}
 
-            {% block body %}{% endblock %}
-        </div>
-    </div>
+        {% block body %}{% endblock %}
+    </main>
 
-    <footer>
-        {% include 'layouts/footer.html.twig' ignore missing %}
+    <footer class="footer footer-center p-10 bg-gray-50 text-base-content border-t border-gray-200 mt-auto">
+        <aside>
+             <div class="flex items-center gap-2 mb-2 text-teal-600">
+                <i data-lucide="pen-tool" class="w-6 h-6"></i>
+                <span class="font-bold text-xl text-gray-900">Blogify</span>
+            </div>
+            <p class="font-medium text-gray-500">
+                Copyright © {{ 'now'|date('Y') }} - All right reserved
+            </p>
+        </aside>
     </footer>
+
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>

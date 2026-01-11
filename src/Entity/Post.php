@@ -35,6 +35,12 @@ class Post
     #[ORM\Column(name: 'updated_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $updatedAt = null;
 
+    #[ORM\Column(type: 'string', length: 20, options: ['default' => 'draft'])]
+    private string $status = 'draft';
+
+    #[ORM\Column(name: 'published_at', type: 'datetime', nullable: true)]
+    private ?\DateTimeInterface $publishedAt = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -113,6 +119,58 @@ class Post
     public function getUpdatedAt(): ?\DateTimeInterface
     {
         return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(?\DateTimeInterface $updatedAt): self
+    {
+        $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getStatus(): string
+    {
+        return $this->status;
+    }
+
+    public function setStatus(string $status): self
+    {
+        $this->status = $status;
+
+        // Auto-set publishedAt when status changes to published
+        if ($status === 'published' && $this->publishedAt === null) {
+            $this->publishedAt = new \DateTimeImmutable();
+        }
+
+        return $this;
+    }
+
+    public function getPublishedAt(): ?\DateTimeInterface
+    {
+        return $this->publishedAt;
+    }
+
+    public function setPublishedAt(?\DateTimeInterface $publishedAt): self
+    {
+        $this->publishedAt = $publishedAt;
+
+        return $this;
+    }
+
+    // Helper methods for status checking
+    public function isPublished(): bool
+    {
+        return $this->status === 'published';
+    }
+
+    public function isDraft(): bool
+    {
+        return $this->status === 'draft';
+    }
+
+    public function isRejected(): bool
+    {
+        return $this->status === 'rejected';
     }
 }
 

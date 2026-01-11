@@ -1,0 +1,56 @@
+{% extends 'author/layout.html.twig' %}
+
+{% block title %}New Post{% endblock %}
+
+{% block author_content %}
+    <div class="max-w-3xl mx-auto">
+        <div class="mb-8">
+            <a href="{{ path('author_dashboard') }}" class="text-sm text-gray-500 hover:text-teal-600 flex items-center gap-1 mb-2">
+                <i data-lucide="arrow-left" class="w-4 h-4"></i> Back to Dashboard
+            </a>
+            <h1 class="text-2xl font-bold text-gray-900">Create New Post</h1>
+        </div>
+
+        <div class="bg-white">
+            {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+            
+            {# Custom Form Rendering for better control #}
+            
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Title</span>
+                </label>
+                {{ form_widget(form.title, {'attr': {'class': 'input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent', 'placeholder': 'Enter a catchy title...'}}) }}
+                {{ form_errors(form.title, {'attr': {'class': 'text-red-500 text-sm mt-1'}}) }}
+            </div>
+
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Description</span>
+                </label>
+                {{ form_widget(form.description, {'attr': {'class': 'textarea textarea-bordered h-48 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent', 'placeholder': 'Write your story here...'}}) }}
+                {{ form_errors(form.description, {'attr': {'class': 'text-red-500 text-sm mt-1'}}) }}
+            </div>
+
+            <div class="form-control w-full">
+                <label class="label">
+                    <span class="label-text font-medium text-gray-700">Cover Image</span>
+                </label>
+                {{ form_widget(form.imageFile, {'attr': {'class': 'file-input file-input-bordered w-full focus:outline-none focus:ring-2 focus:ring-teal-500'}}) }}
+                {{ form_errors(form.imageFile, {'attr': {'class': 'text-red-500 text-sm mt-1'}}) }}
+                <label class="label">
+                    <span class="label-text-alt text-gray-400">Detailed, high-resolution images work best.</span>
+                </label>
+            </div>
+
+            <div class="flex items-center justify-end gap-3 pt-6 border-t border-gray-100 mt-8">
+                <a href="{{ path('author_dashboard') }}" class="btn btn-ghost hover:bg-gray-100 text-gray-600">Cancel</a>
+                <button type="submit" class="btn bg-teal-600 hover:bg-teal-700 text-white border-none min-w-[120px]">
+                    Create Draft
+                </button>
+            </div>
+
+            {{ form_end(form) }}
+        </div>
+    </div>
+{% endblock %}

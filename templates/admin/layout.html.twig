@@ -1,0 +1,38 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+<div class="flex min-h-[calc(100vh-8rem)]">
+    {# Sidebar #}
+    <aside class="w-64 bg-white border-r border-gray-200 hidden md:block rounded-l-lg shadow-sm">
+        <div class="p-6">
+            <h2 class="text-xs font-bold text-gray-400 uppercase tracking-wider mb-4">Admin Panel</h2>
+            <nav class="space-y-1">
+                <a href="{{ path('admin_dashboard') }}" 
+                   class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ app.request.get('_route') == 'admin_dashboard' ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50' }} transition-colors">
+                    <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                    Dashboard
+                </a>
+                <a href="{{ path('admin_users') }}" 
+                   class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ 'admin_users' in app.request.get('_route') ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50' }} transition-colors">
+                    <i data-lucide="users" class="w-5 h-5"></i>
+                    Users
+                </a>
+                <a href="{{ path('admin_posts') }}" 
+                   class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ 'admin_posts' in app.request.get('_route') ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50' }} transition-colors">
+                    <i data-lucide="file-text" class="w-5 h-5"></i>
+                    All Posts
+                </a>
+                <a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+                    <i data-lucide="settings" class="w-5 h-5"></i>
+                    Settings
+                </a>
+            </nav>
+        </div>
+    </aside>
+
+    {# Main Content #}
+    <div class="flex-1 bg-white p-8 md:rounded-r-lg shadow-sm">
+        {% block admin_content %}{% endblock %}
+    </div>
+</div>
+{% endblock %}
