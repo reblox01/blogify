@@ -101,6 +101,14 @@ class AdminController extends AbstractController
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
         $status = $request->request->get('status');
+
+        if ($status === 'deleted') {
+            $em->remove($post);
+            $em->flush();
+            $this->addFlash('success', 'Post deleted successfully.');
+            return $this->redirectToRoute('admin_posts');
+        }
+
         if (in_array($status, ['draft', 'published', 'rejected'])) {
             $post->setStatus($status);
             $em->flush();

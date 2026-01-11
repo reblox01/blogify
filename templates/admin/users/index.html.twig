@@ -1,0 +1,86 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Manage Users - Admin{% endblock %}
+
+{% block admin_content %}
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">User Management</h1>
+            <p class="text-sm text-gray-500 mt-1">Manage user roles and access.</p>
+        </div>
+        <div class="text-sm text-gray-500">
+            Total Users: <span class="font-bold text-gray-900">{{ users|length }}</span>
+        </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-600">
+                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-4 w-16">ID</th>
+                        <th class="px-6 py-4">User</th>
+                        <th class="px-6 py-4">Role</th>
+                        <th class="px-6 py-4">Joined</th>
+                        <th class="px-6 py-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for user in users %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4 font-mono text-xs text-gray-400">#{{ user.id }}</td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-3">
+                                    <div class="avatar placeholder">
+                                        <div class="bg-teal-100 text-teal-700 rounded-full w-8">
+                                            <span class="text-xs font-bold">{{ user.email|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="font-medium text-gray-900">{{ user.email }}</div>
+                                        <div class="text-xs text-gray-400">
+                                            {% if user.posts|length > 0 %}
+                                                {{ user.posts|length }} posts published
+                                            {% else %}
+                                                No posts
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <form action="{{ path('admin_user_role', {id: user.id}) }}" method="POST" class="flex items-center gap-2">
+                                    <select name="role" onchange="this.form.submit()" class="select select-bordered select-xs w-32 focus:outline-none focus:border-teal-500 {{ 'ROLE_ADMIN' in user.roles ? 'text-teal-700 bg-teal-50 border-teal-200' : '' }}">
+                                        <option value="ROLE_USER" {{ 'ROLE_USER' in user.roles and 'ROLE_ADMIN' not in user.roles and 'ROLE_AUTHOR' not in user.roles ? 'selected' : '' }}>User</option>
+                                        <option value="ROLE_AUTHOR" {{ 'ROLE_AUTHOR' in user.roles ? 'selected' : '' }}>Author</option>
+                                        <option value="ROLE_ADMIN" {{ 'ROLE_ADMIN' in user.roles ? 'selected' : '' }}>Admin</option>
+                                    </select>
+                                </form>
+                            </td>
+                            <td class="px-6 py-4">
+                                {{ user.createdAt|date('M d, Y') }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                {% if user != app.user %}
+                                    <form action="{{ path('admin_user_delete', {id: user.id}) }}" method="POST" onsubmit="return confirm('Are you sure you want to delete this user? This action cannot be undone.');" class="inline-block">
+                                        <button type="submit" class="btn btn-ghost btn-xs text-red-600 hover:bg-red-50" title="Delete User">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                {% else %}
+                                    <span class="text-xs text-gray-400 italic">Current User</span>
+                                {% endif %}
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                No users found.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}

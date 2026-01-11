@@ -1,0 +1,105 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Manage Posts - Admin{% endblock %}
+
+{% block admin_content %}
+    <div class="flex justify-between items-center mb-8">
+        <div>
+            <h1 class="text-2xl font-bold text-gray-900">Post Moderation</h1>
+            <p class="text-sm text-gray-500 mt-1">Review, publish, or reject content.</p>
+        </div>
+        <div class="flex gap-2">
+            <button class="btn btn-sm btn-outline gap-2">
+                <i data-lucide="filter" class="w-4 h-4"></i> Filter
+            </button>
+        </div>
+    </div>
+
+    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-gray-600">
+                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
+                    <tr>
+                        <th class="px-6 py-4">Post</th>
+                        <th class="px-6 py-4">Author</th>
+                        <th class="px-6 py-4">Status</th>
+                        <th class="px-6 py-4">Date</th>
+                        <th class="px-6 py-4 text-right">Moderation</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-gray-200">
+                    {% for post in posts %}
+                        <tr class="hover:bg-gray-50 transition-colors">
+                            <td class="px-6 py-4">
+                                <div class="font-medium text-gray-900 mb-1">{{ post.title }}</div>
+                                <div class="text-xs text-gray-500 line-clamp-1">{{ post.description }}</div>
+                            </td>
+                            <td class="px-6 py-4">
+                                <div class="flex items-center gap-2">
+                                    <div class="avatar placeholder">
+                                        <div class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 text-xs">
+                                            <span>{{ post.user.email|first|upper }}</span>
+                                        </div>
+                                    </div>
+                                    <span class="text-xs font-medium">{{ post.user.email }}</span>
+                                </div>
+                            </td>
+                            <td class="px-6 py-4">
+                                {% if post.status == 'published' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Published
+                                    </span>
+                                {% elseif post.status == 'draft' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+                                        Draft
+                                    </span>
+                                {% elseif post.status == 'rejected' %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        Rejected
+                                    </span>
+                                {% else %}
+                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                        Pending
+                                    </span>
+                                {% endif %}
+                            </td>
+                            <td class="px-6 py-4 text-xs">
+                                {{ post.createdAt|date('M d, Y') }}
+                            </td>
+                            <td class="px-6 py-4 text-right">
+                                <div class="flex justify-end gap-2">
+                                    <form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
+                                        <input type="hidden" name="status" value="published">
+                                        <button type="submit" class="btn btn-xs btn-circle btn-ghost text-green-600 hover:bg-green-50" title="Approve & Publish">
+                                            <i data-lucide="check" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                    
+                                     <form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
+                                        <input type="hidden" name="status" value="rejected">
+                                        <button type="submit" class="btn btn-xs btn-circle btn-ghost text-orange-600 hover:bg-orange-50" title="Reject">
+                                            <i data-lucide="x" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+
+                                     <form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" onsubmit="return confirm('Delete this post permanently?');">
+                                         <input type="hidden" name="status" value="deleted"> {# Logic for delete needed in controller if not exists #}
+                                        <button type="submit" class="btn btn-xs btn-circle btn-ghost text-red-600 hover:bg-red-50" title="Delete">
+                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                        </button>
+                                    </form>
+                                </div>
+                            </td>
+                        </tr>
+                    {% else %}
+                        <tr>
+                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
+                                No posts to moderate.
+                            </td>
+                        </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+{% endblock %}
