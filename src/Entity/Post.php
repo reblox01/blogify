@@ -25,7 +25,7 @@ class Post
     #[ORM\Column(name: 'image_path', type: 'string', length: 255)]
     private string $imagePath;
 
-    #[ORM\ManyToOne(targetEntity: User::class)]
+    #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private User $user;
 

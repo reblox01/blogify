@@ -57,23 +57,31 @@ class AuthorController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $image */
-            $image = $form->get('imageFile')->getData();
 
-            $post->setSlug(strtolower($slugger->slug($post->getTitle())) . '-' . uniqid());
-
-            if ($image) {
-                $newFilename = uniqid() . '-' . $image->getClientOriginalName();
-                try {
-                    $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
-                    $post->setImagePath($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Failed to upload image');
+            // Handle Base64 Cropped Image
+            $croppedImage = $request->request->get('cropped_image');
+            if ($croppedImage) {
+                $filename = $this->saveBase64Image($croppedImage);
+                if ($filename) {
+                    $post->setImagePath($filename);
+                }
+            } else {
+                /** @var UploadedFile $image */
+                $image = $form->get('imageFile')->getData();
+                if ($image) {
+                    $newFilename = uniqid() . '-' . $image->getClientOriginalName();
+                    try {
+                        $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
+                        $post->setImagePath($newFilename);
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Failed to upload image');
+                    }
                 }
             }
 
+            $post->setSlug(strtolower($slugger->slug($post->getTitle())) . '-' . uniqid());
             $post->setUser($this->getUser());
-            $post->setStatus('draft'); // Default to draft
+            $post->setStatus('draft');
 
             $em->persist($post);
             $em->flush();
@@ -100,16 +108,24 @@ class AuthorController extends AbstractController
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            /** @var UploadedFile $image */
-            $image = $form->get('imageFile')->getData();
-
-            if ($image) {
-                $newFilename = uniqid() . '-' . $image->getClientOriginalName();
-                try {
-                    $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
-                    $post->setImagePath($newFilename);
-                } catch (FileException $e) {
-                    $this->addFlash('error', 'Failed to upload image');
+            // Handle Base64 Cropped Image
+            $croppedImage = $request->request->get('cropped_image');
+            if ($croppedImage) {
+                $filename = $this->saveBase64Image($croppedImage);
+                if ($filename) {
+                    $post->setImagePath($filename);
+                }
+            } else {
+                /** @var UploadedFile $image */
+                $image = $form->get('imageFile')->getData();
+                if ($image) {
+                    $newFilename = uniqid() . '-' . $image->getClientOriginalName();
+                    try {
+                        $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
+                        $post->setImagePath($newFilename);
+                    } catch (FileException $e) {
+                        $this->addFlash('error', 'Failed to upload image');
+                    }
                 }
             }
 
@@ -139,5 +155,29 @@ class AuthorController extends AbstractController
 
         $this->addFlash('success', 'Post deleted successfully.');
         return $this->redirectToRoute('author_dashboard');
+    }
+
+    private function saveBase64Image(string $base64String): ?string
+    {
+        if (preg_match('/^data:image\/(\w+);base64,/', $base64String, $type)) {
+            $data = substr($base64String, strpos($base64String, ',') + 1);
+            $type = strtolower($type[1]); // jpg, png, gif
+
+            if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+                return null;
+            }
+
+            $data = base64_decode($data);
+            if ($data === false) {
+                return null;
+            }
+
+            $filename = uniqid() . '.' . $type;
+            $path = $this->getParameter('kernel.project_dir') . '/public/images/' . $filename;
+
+            file_put_contents($path, $data);
+            return $filename;
+        }
+        return null;
     }
 }

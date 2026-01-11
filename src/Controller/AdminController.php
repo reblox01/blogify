@@ -117,4 +117,14 @@ class AdminController extends AbstractController
 
         return $this->redirectToRoute('admin_posts');
     }
+
+    #[Route('/posts/{id}/preview', name: 'post_preview')]
+    public function preview(Post $post): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        return $this->render('admin/posts/preview.html.twig', [
+            'post' => $post,
+        ]);
+    }
 }

@@ -68,6 +68,10 @@
                             </td>
                             <td class="px-6 py-4 text-right">
                                 <div class="flex justify-end gap-2">
+                                    <a href="{{ path('admin_post_preview', {id: post.id}) }}" class="btn btn-xs btn-circle btn-ghost text-blue-600 hover:bg-blue-50" title="Preview">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                    </a>
+
                                     <form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
                                         <input type="hidden" name="status" value="published">
                                         <button type="submit" class="btn btn-xs btn-circle btn-ghost text-green-600 hover:bg-green-50" title="Approve & Publish">
