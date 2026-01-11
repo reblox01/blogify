@@ -4,7 +4,7 @@
 
 {% block author_content %}
     {# TinyMCE CDN #}
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/{{ tinymce_api_key }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     {# Cropper.js CDN #}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -31,10 +31,10 @@
             </label>
             
             <div class="flex flex-col gap-4">
-                {{ form_widget(form.imageFile, {'attr': {'class': 'hidden', 'accept': 'image/*', 'id': 'imageInput'}}) }}
+                {{ form_widget(form.imageFile, {'id': 'imageInput', 'attr': {'class': 'hidden', 'accept': 'image/*'}}) }}
                 <input type="hidden" name="cropped_image" id="croppedImage">
 
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer" onclick="document.getElementById('imageInput').click()">
+                <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer">
                     
                     {# Initially show upload placeholder if no image, or if image exists, show it #}
                     <div id="uploadPlaceholder" class="{{ post.imagePath ? 'hidden' : '' }}">
@@ -44,8 +44,8 @@
                     </div>
 
                     <img id="imagePreview" 
-                         src="{{ post.imagePath ? asset('images/' ~ post.imagePath) : '' }}" 
-                         class="{{ post.imagePath ? '' : 'hidden' }} max-h-64 mx-auto rounded-lg shadow-sm" />
+                         src="{{ post.imageData ? path('post_image', {id: post.id}) : (post.imagePath ? asset('images/' ~ post.imagePath) : '') }}" 
+                         class="{{ post.imageData or post.imagePath ? '' : 'hidden' }} max-h-64 mx-auto rounded-lg shadow-sm" />
                 </div>
             </div>
              {{ form_errors(form.imageFile, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
@@ -55,7 +55,7 @@
             <label class="label">
                 <span class="label-text font-medium text-gray-700">Content</span>
             </label>
-            {{ form_widget(form.description, {'attr': {'class': 'textarea textarea-bordered h-64 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent hidden', 'id': 'descriptionEditor'}}) }}
+            {{ form_widget(form.description, {'id': 'descriptionEditor', 'attr': {'class': 'textarea textarea-bordered h-64 hidden'}}) }}
             {{ form_errors(form.description, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
         </div>
 
@@ -89,9 +89,11 @@
     </div>
 
     <script>
+        console.log("TinyMCE API Key:", "{{ tinymce_api_key }}");
+
         // Init TinyMCE
         tinymce.init({
-            selector: '#post_description',
+            selector: '#descriptionEditor',
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
             height: 400,
@@ -106,6 +108,7 @@
          // --- Cropper Logic (Same as Create) ---
         let cropper;
         const imageInput = document.getElementById('imageInput');
+        const dropzone = document.getElementById('dropzone');
         const cropModal = document.getElementById('cropModal');
         const imageToCrop = document.getElementById('imageToCrop');
         const imagePreview = document.getElementById('imagePreview');
@@ -113,7 +116,13 @@
         const cropBtn = document.getElementById('cropBtn');
         const croppedImageInput = document.getElementById('croppedImage');
 
+        if (!imageInput) console.error("Could not find imageInput element");
+        if (!dropzone) console.error("Could not find dropzone element");
+
+        dropzone.addEventListener('click', () => imageInput.click());
+
         imageInput.addEventListener('change', function(e) {
+            console.log("File selected");
             const files = e.target.files;
             if (files && files.length > 0) {
                 const url = URL.createObjectURL(files[0]);

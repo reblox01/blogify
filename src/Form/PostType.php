@@ -33,6 +33,7 @@ class PostType extends AbstractType
                             'image/jpeg',
                             'image/png',
                             'image/jpg',
+                            'image/webp'
                         ],
                     ]),
                 ],

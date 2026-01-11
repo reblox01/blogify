@@ -4,7 +4,7 @@
 
 {% block author_content %}
     {# TinyMCE CDN #}
-    <script src="https://cdn.tiny.cloud/1/no-api-key/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+    <script src="https://cdn.tiny.cloud/1/{{ tinymce_api_key }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
     {# Cropper.js CDN #}
     <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
     <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -25,27 +25,16 @@
              {{ form_errors(form.title, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
         </div>
 
-         <div class="form-control w-full">
+        <div class="form-control w-full">
             <label class="label">
                 <span class="label-text font-medium text-gray-700">Cover Image</span>
             </label>
             
-            {# Custom File Input & Preview Area #}
             <div class="flex flex-col gap-4">
-                {# Hidden Real Input #}
-                {{ form_widget(form.imageFile, {'attr': {'class': 'hidden', 'accept': 'image/*', 'id': 'imageInput'}}) }}
-                {# Hidden Cropped Input (to be handled in controller if we were posting base64 directly, but for now we crop to a blob and put it in the file input or separate field) #}
-                {# For simplicity in Symfony forms, we'll often use a separate hidden field for the base64 string OR stick to standard file upload if crop isn't mandatory. 
-                   Here, we will intercept the form submit, but Symfony Form `imageFile` expects a file.
-                   Let's add a hidden input for `croppedImage` which we will map manually in controller if needed, 
-                   OR we construct a File object from the blob and replace the input file (complex).
-                   
-                   Easier approach: Add a hidden mapped:false field to the form in Controller? 
-                   Or just add a hidden input named 'cropped_image' and handle it in controller.
-                #}
+                {{ form_widget(form.imageFile, {'id': 'imageInput', 'attr': {'class': 'hidden', 'accept': 'image/*'}}) }}
                 <input type="hidden" name="cropped_image" id="croppedImage">
 
-                <div class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer" onclick="document.getElementById('imageInput').click()">
+                <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer">
                     <div id="uploadPlaceholder">
                         <i data-lucide="image-plus" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
                         <p class="text-sm text-gray-500">Click to upload cover image</p>
@@ -61,8 +50,7 @@
             <label class="label">
                 <span class="label-text font-medium text-gray-700">Content</span>
             </label>
-            {# Description field becomes WYSIWYG #}
-            {{ form_widget(form.description, {'attr': {'class': 'textarea textarea-bordered h-64 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent hidden', 'id': 'descriptionEditor'}}) }}
+            {{ form_widget(form.description, {'id': 'descriptionEditor', 'attr': {'class': 'textarea textarea-bordered h-64 hidden'}}) }}
             {{ form_errors(form.description, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
         </div>
 
@@ -96,13 +84,15 @@
     </div>
 
     <script>
+        console.log("TinyMCE API Key:", "{{ tinymce_api_key }}");
+
         // --- TinyMCE Init ---
         tinymce.init({
-            selector: '#post_description', // Matches Symfony form ID for description
+            selector: '#descriptionEditor',
             plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
             toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
             height: 400,
-            convert_urls: false, // Prevents TinyMCE from mangling image URLs
+            convert_urls: false,
             setup: function (editor) {
                 editor.on('change', function () {
                     tinymce.triggerSave();
@@ -113,6 +103,7 @@
         // --- Cropper Logic ---
         let cropper;
         const imageInput = document.getElementById('imageInput');
+        const dropzone = document.getElementById('dropzone');
         const cropModal = document.getElementById('cropModal');
         const imageToCrop = document.getElementById('imageToCrop');
         const imagePreview = document.getElementById('imagePreview');
@@ -120,7 +111,13 @@
         const cropBtn = document.getElementById('cropBtn');
         const croppedImageInput = document.getElementById('croppedImage');
 
+        if (!imageInput) console.error("Could not find imageInput element");
+        if (!dropzone) console.error("Could not find dropzone element");
+
+        dropzone.addEventListener('click', () => imageInput.click());
+
         imageInput.addEventListener('change', function(e) {
+            console.log("File selected");
             const files = e.target.files;
             if (files && files.length > 0) {
                 const url = URL.createObjectURL(files[0]);

@@ -22,8 +22,14 @@ class Post
     #[ORM\Column(type: 'text')]
     private string $description;
 
-    #[ORM\Column(name: 'image_path', type: 'string', length: 255)]
-    private string $imagePath;
+    #[ORM\Column(name: 'image_path', type: 'string', length: 255, nullable: true)]
+    private ?string $imagePath = null;
+
+    #[ORM\Column(name: 'image_data', type: 'text', nullable: true)]
+    private ?string $imageData = null;
+
+    #[ORM\Column(name: 'image_mime_type', type: 'string', length: 50, nullable: true)]
+    private ?string $imageMimeType = null;
 
     #[ORM\ManyToOne(targetEntity: User::class, inversedBy: 'posts')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
@@ -87,14 +93,38 @@ class Post
         return $this;
     }
 
-    public function getImagePath(): string
+    public function getImagePath(): ?string
     {
         return $this->imagePath;
     }
 
-    public function setImagePath(string $imagePath): self
+    public function setImagePath(?string $imagePath): self
     {
         $this->imagePath = $imagePath;
+
+        return $this;
+    }
+
+    public function getImageData(): ?string
+    {
+        return $this->imageData;
+    }
+
+    public function setImageData(?string $imageData): self
+    {
+        $this->imageData = $imageData;
+
+        return $this;
+    }
+
+    public function getImageMimeType(): ?string
+    {
+        return $this->imageMimeType;
+    }
+
+    public function setImageMimeType(?string $imageMimeType): self
+    {
+        $this->imageMimeType = $imageMimeType;
 
         return $this;
     }

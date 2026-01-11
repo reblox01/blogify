@@ -13,6 +13,7 @@ use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
+use App\Service\ImageEncryptionService;
 
 #[Route('/author', name: 'author_')]
 class AuthorController extends AbstractController
@@ -48,7 +49,7 @@ class AuthorController extends AbstractController
     }
 
     #[Route('/post/new', name: 'post_new')]
-    public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function new(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ImageEncryptionService $encryptionService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_AUTHOR');
 
@@ -61,21 +62,18 @@ class AuthorController extends AbstractController
             // Handle Base64 Cropped Image
             $croppedImage = $request->request->get('cropped_image');
             if ($croppedImage) {
-                $filename = $this->saveBase64Image($croppedImage);
-                if ($filename) {
-                    $post->setImagePath($filename);
+                $imageData = $this->processBase64Image($croppedImage);
+                if ($imageData) {
+                    $post->setImageData($encryptionService->encrypt($imageData['data']));
+                    $post->setImageMimeType($imageData['mimeType']);
                 }
             } else {
                 /** @var UploadedFile $image */
                 $image = $form->get('imageFile')->getData();
                 if ($image) {
-                    $newFilename = uniqid() . '-' . $image->getClientOriginalName();
-                    try {
-                        $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
-                        $post->setImagePath($newFilename);
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Failed to upload image');
-                    }
+                    $data = file_get_contents($image->getPathname());
+                    $post->setImageData($encryptionService->encrypt($data));
+                    $post->setImageMimeType($image->getClientMimeType());
                 }
             }
 
@@ -96,7 +94,7 @@ class AuthorController extends AbstractController
     }
 
     #[Route('/post/{id}/edit', name: 'post_edit')]
-    public function edit(Post $post, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function edit(Post $post, Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ImageEncryptionService $encryptionService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_AUTHOR');
 
@@ -111,21 +109,18 @@ class AuthorController extends AbstractController
             // Handle Base64 Cropped Image
             $croppedImage = $request->request->get('cropped_image');
             if ($croppedImage) {
-                $filename = $this->saveBase64Image($croppedImage);
-                if ($filename) {
-                    $post->setImagePath($filename);
+                $imageData = $this->processBase64Image($croppedImage);
+                if ($imageData) {
+                    $post->setImageData($encryptionService->encrypt($imageData['data']));
+                    $post->setImageMimeType($imageData['mimeType']);
                 }
             } else {
                 /** @var UploadedFile $image */
                 $image = $form->get('imageFile')->getData();
                 if ($image) {
-                    $newFilename = uniqid() . '-' . $image->getClientOriginalName();
-                    try {
-                        $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
-                        $post->setImagePath($newFilename);
-                    } catch (FileException $e) {
-                        $this->addFlash('error', 'Failed to upload image');
-                    }
+                    $data = file_get_contents($image->getPathname());
+                    $post->setImageData($encryptionService->encrypt($data));
+                    $post->setImageMimeType($image->getClientMimeType());
                 }
             }
 
@@ -157,26 +152,21 @@ class AuthorController extends AbstractController
         return $this->redirectToRoute('author_dashboard');
     }
 
-    private function saveBase64Image(string $base64String): ?string
+    private function processBase64Image(string $base64String): ?array
     {
-        if (preg_match('/^data:image\/(\w+);base64,/', $base64String, $type)) {
+        if (preg_match('/^data:(image\/\w+);base64,/', $base64String, $matches)) {
+            $mimeType = $matches[1];
             $data = substr($base64String, strpos($base64String, ',') + 1);
-            $type = strtolower($type[1]); // jpg, png, gif
+            $decodedData = base64_decode($data);
 
-            if (!in_array($type, ['jpg', 'jpeg', 'gif', 'png'])) {
+            if ($decodedData === false) {
                 return null;
             }
 
-            $data = base64_decode($data);
-            if ($data === false) {
-                return null;
-            }
-
-            $filename = uniqid() . '.' . $type;
-            $path = $this->getParameter('kernel.project_dir') . '/public/images/' . $filename;
-
-            file_put_contents($path, $data);
-            return $filename;
+            return [
+                'data' => $decodedData,
+                'mimeType' => $mimeType
+            ];
         }
         return null;
     }

@@ -13,6 +13,7 @@ use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Form\PostType;
 use App\Repository\PostRepository;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
+use App\Service\ImageEncryptionService;
 
 class BlogController extends AbstractController
 {
@@ -49,7 +50,7 @@ class BlogController extends AbstractController
     }
 
     #[Route('/blog/store', name: 'blog_store', methods: ['POST'])]
-    public function store(Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function store(Request $request, EntityManagerInterface $em, SluggerInterface $slugger, ImageEncryptionService $encryptionService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         $form = $this->createForm(PostType::class);
@@ -68,13 +69,9 @@ class BlogController extends AbstractController
             }
             $post->setSlug($slug);
             if ($image) {
-                $newFilename = uniqid() . '-' . $image->getClientOriginalName();
-                try {
-                    $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
-                } catch (FileException $e) {
-                    // ignore for now
-                }
-                $post->setImagePath($newFilename);
+                $data = file_get_contents($image->getPathname());
+                $post->setImageData($encryptionService->encrypt($data));
+                $post->setImageMimeType($image->getClientMimeType());
             }
             $post->setUser($this->getUser());
             $em->persist($post);
@@ -97,7 +94,7 @@ class BlogController extends AbstractController
     }
 
     #[Route('/blog/{slug}/update', name: 'blog_update', methods: ['POST'])]
-    public function update(string $slug, Request $request, EntityManagerInterface $em, SluggerInterface $slugger, PostRepository $postRepository): Response
+    public function update(string $slug, Request $request, EntityManagerInterface $em, SluggerInterface $slugger, PostRepository $postRepository, ImageEncryptionService $encryptionService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
         $post = $postRepository->findOneBy(['slug' => $slug]);
@@ -111,12 +108,9 @@ class BlogController extends AbstractController
             $image = $form->get('imageFile')->getData();
             $post->setSlug(strtolower($slugger->slug($post->getTitle())));
             if ($image) {
-                $newFilename = uniqid() . '-' . $image->getClientOriginalName();
-                try {
-                    $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
-                } catch (FileException $e) {
-                }
-                $post->setImagePath($newFilename);
+                $data = file_get_contents($image->getPathname());
+                $post->setImageData($encryptionService->encrypt($data));
+                $post->setImageMimeType($image->getClientMimeType());
             }
             $em->flush();
         }

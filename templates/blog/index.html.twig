@@ -5,9 +5,26 @@
         <h1 class="text-3xl font-bold mb-6">Blog</h1>
         <div class="grid grid-cols-1 gap-6">
             {% for post in posts %}
-                <article class="p-4 border rounded">
-                    <h2 class="text-2xl"><a href="{{ path('blog_show', {slug: post.slug}) }}">{{ post.title }}</a></h2>
-                    <p class="text-sm text-gray-600">By {{ post.user.name ?? 'Unknown' }} — {{ post.createdAt ? post.createdAt|date('Y-m-d') : '' }}</p>
+                <article class="p-6 bg-white border border-gray-200 rounded-xl shadow-sm hover:shadow-md transition-shadow">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        {% if post.imageData %}
+                            <div class="w-full md:w-48 h-48 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
+                                <img src="{{ path('post_image', {id: post.id}) }}" class="w-full h-full object-cover" alt="{{ post.title }}">
+                            </div>
+                        {% endif %}
+                        <div class="flex-1">
+                            <h2 class="text-2xl font-bold text-gray-900 mb-2">
+                                <a href="{{ path('blog_show', {slug: post.slug}) }}" class="hover:text-teal-600 transition-colors">{{ post.title }}</a>
+                            </h2>
+                            <p class="text-sm text-gray-500 mb-4">By {{ post.user.name ?? 'Unknown' }} — {{ post.createdAt ? post.createdAt|date('M d, Y') : '' }}</p>
+                            <div class="text-gray-600 line-clamp-3 mb-4">
+                                {{ post.description|striptags|truncate(200) }}
+                            </div>
+                            <a href="{{ path('blog_show', {slug: post.slug}) }}" class="text-teal-600 font-medium hover:underline inline-flex items-center gap-1">
+                                Read more <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                            </a>
+                        </div>
+                    </div>
                 </article>
             {% else %}
                 <p>No posts found.</p>
