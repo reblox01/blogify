@@ -11,14 +11,15 @@ use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Form\PostType;
+use App\Repository\PostRepository;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 
 class BlogController extends AbstractController
 {
     #[Route('/blog', name: 'blog_index')]
-    public function index(): Response
+    public function index(PostRepository $postRepository): Response
     {
-        $posts = $this->getDoctrine()->getRepository(Post::class)->findBy([], ['updatedAt' => 'DESC']);
+        $posts = $postRepository->findAll();
 
         return $this->render('blog/index.html.twig', [
             'posts' => $posts,
@@ -26,9 +27,9 @@ class BlogController extends AbstractController
     }
 
     #[Route('/blog/{slug}', name: 'blog_show')]
-    public function show(string $slug): Response
+    public function show(string $slug, PostRepository $postRepository): Response
     {
-        $post = $this->getDoctrine()->getRepository(Post::class)->findOneBy(['slug' => $slug]);
+        $post = $postRepository->findOneBy(['slug' => $slug]);
 
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
@@ -63,13 +64,13 @@ class BlogController extends AbstractController
             $slug = $baseSlug;
             $i = 1;
             while ($em->getRepository(Post::class)->findOneBy(['slug' => $slug])) {
-                $slug = $baseSlug.'-'.$i++;
+                $slug = $baseSlug . '-' . $i++;
             }
             $post->setSlug($slug);
             if ($image) {
-                $newFilename = uniqid().'-'.$image->getClientOriginalName();
+                $newFilename = uniqid() . '-' . $image->getClientOriginalName();
                 try {
-                    $image->move($this->getParameter('kernel.project_dir').'/public/images', $newFilename);
+                    $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
                 } catch (FileException $e) {
                     // ignore for now
                 }
@@ -84,10 +85,10 @@ class BlogController extends AbstractController
     }
 
     #[Route('/blog/{slug}/edit', name: 'blog_edit')]
-    public function edit(string $slug): Response
+    public function edit(string $slug, PostRepository $postRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
-        $post = $this->getDoctrine()->getRepository(Post::class)->findOneBy(['slug' => $slug]);
+        $post = $postRepository->findOneBy(['slug' => $slug]);
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }
@@ -96,10 +97,10 @@ class BlogController extends AbstractController
     }
 
     #[Route('/blog/{slug}/update', name: 'blog_update', methods: ['POST'])]
-    public function update(string $slug, Request $request, EntityManagerInterface $em, SluggerInterface $slugger): Response
+    public function update(string $slug, Request $request, EntityManagerInterface $em, SluggerInterface $slugger, PostRepository $postRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
-        $post = $this->getDoctrine()->getRepository(Post::class)->findOneBy(['slug' => $slug]);
+        $post = $postRepository->findOneBy(['slug' => $slug]);
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }
@@ -110,9 +111,9 @@ class BlogController extends AbstractController
             $image = $form->get('imageFile')->getData();
             $post->setSlug(strtolower($slugger->slug($post->getTitle())));
             if ($image) {
-                $newFilename = uniqid().'-'.$image->getClientOriginalName();
+                $newFilename = uniqid() . '-' . $image->getClientOriginalName();
                 try {
-                    $image->move($this->getParameter('kernel.project_dir').'/public/images', $newFilename);
+                    $image->move($this->getParameter('kernel.project_dir') . '/public/images', $newFilename);
                 } catch (FileException $e) {
                 }
                 $post->setImagePath($newFilename);
@@ -124,10 +125,10 @@ class BlogController extends AbstractController
     }
 
     #[Route('/blog/{slug}/delete', name: 'blog_delete', methods: ['POST'])]
-    public function delete(string $slug, EntityManagerInterface $em): Response
+    public function delete(string $slug, EntityManagerInterface $em, PostRepository $postRepository): Response
     {
         $this->denyAccessUnlessGranted('ROLE_USER');
-        $post = $this->getDoctrine()->getRepository(Post::class)->findOneBy(['slug' => $slug]);
+        $post = $postRepository->findOneBy(['slug' => $slug]);
         if (!$post) {
             throw $this->createNotFoundException('Post not found');
         }

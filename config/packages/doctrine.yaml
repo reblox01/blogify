@@ -24,6 +24,7 @@ doctrine:
             one_time_token_type: string
             flow_state: string
             regclass: string
+            _user_defined_filter: string
     orm:
         auto_generate_proxy_classes: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
