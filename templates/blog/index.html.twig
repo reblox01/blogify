@@ -18,7 +18,7 @@
                             </h2>
                             <p class="text-sm text-gray-500 mb-4">By {{ post.user.name ?? 'Unknown' }} — {{ post.createdAt ? post.createdAt|date('M d, Y') : '' }}</p>
                             <div class="text-gray-600 line-clamp-3 mb-4">
-                                {{ post.description|striptags|truncate(200) }}
+                                {{ post.description|striptags|u.truncate(200, '...') }}
                             </div>
                             <a href="{{ path('blog_show', {slug: post.slug}) }}" class="text-teal-600 font-medium hover:underline inline-flex items-center gap-1">
                                 Read more <i data-lucide="arrow-right" class="w-4 h-4"></i>
