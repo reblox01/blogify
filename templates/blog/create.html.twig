@@ -1,0 +1,18 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto bg-white rounded shadow p-6">
+        <h1 class="text-2xl font-bold mb-4">Create Post</h1>
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'post-form', 'novalidate': 'novalidate'}}) }}
+            <div class="space-y-4">
+                {{ form_row(form.title, {'attr': {'class': 'mt-1 block w-full rounded border-gray-300'}}) }}
+                {{ form_row(form.description, {'attr': {'class': 'mt-1 block w-full rounded border-gray-300', 'rows': 6}}) }}
+                {{ form_row(form.imageFile) }}
+            </div>
+            <div class="mt-4">
+                <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Publish</button>
+            </div>
+        {{ form_end(form) }}
+    </div>
+{% endblock %}
+

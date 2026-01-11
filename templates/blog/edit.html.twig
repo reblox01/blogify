@@ -1,0 +1,24 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="max-w-2xl mx-auto bg-white rounded shadow p-6">
+        <h1 class="text-2xl font-bold mb-4">Edit Post</h1>
+        {{ form_start(form, {'attr': {'enctype': 'multipart/form-data', 'id': 'post-form-edit', 'novalidate': 'novalidate'}}) }}
+            <div class="space-y-4">
+                {{ form_row(form.title, {'attr': {'class': 'mt-1 block w-full rounded border-gray-300'}}) }}
+                {{ form_row(form.description, {'attr': {'class': 'mt-1 block w-full rounded border-gray-300', 'rows': 6}}) }}
+                {{ form_row(form.imageFile) }}
+            </div>
+            <div class="mt-4 flex items-center gap-3">
+                <button class="bg-blue-600 text-white px-4 py-2 rounded" type="submit">Update</button>
+                <form action="{{ path('blog_delete', {slug: post.slug}) }}" method="post" onsubmit="return confirm('Delete this post?');">
+                    <button class="bg-red-600 text-white px-4 py-2 rounded" type="submit">Delete</button>
+                </form>
+            </div>
+        {{ form_end(form) }}
+        <form action="{{ path('blog_delete', {slug: post.slug}) }}" method="post" onsubmit="return confirm('Delete this post?');">
+            <button type="submit">Delete</button>
+        </form>
+    </div>
+{% endblock %}
+
