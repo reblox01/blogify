@@ -11,7 +11,7 @@ use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 use Symfony\Component\Security\Core\Exception\AuthenticationException;
 use Psr\Log\LoggerInterface;
 
-#[AsEventListener(event: KernelEvents::EXCEPTION, method: 'onKernelException')]
+#[AsEventListener(event: KernelEvents::EXCEPTION, method: 'onKernelException', priority: 10)]
 class ExceptionListener
 {
     private $urlGenerator;
