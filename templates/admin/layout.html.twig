@@ -27,7 +27,17 @@
 						<i data-lucide="file-text" class="w-5 h-5"></i>
 						All Posts
 					</a>
-					<a href="#" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg text-gray-600 hover:bg-gray-50 transition-colors">
+					<a href="{{ path('admin_profile') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ app.request.get('_route') == 'admin_profile' ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50' }} transition-colors">
+						<div class="w-6 h-6 rounded-full bg-teal-100 flex items-center justify-center shrink-0 overflow-hidden">
+							{% if app.user.avatarData %}
+								<img src="{{ path('user_avatar', {id: app.user.id}) }}" class="w-full h-full object-cover">
+							{% else %}
+								<i data-lucide="user-circle" class="w-5 h-5"></i>
+							{% endif %}
+						</div>
+						Profile
+					</a>
+					<a href="{{ path('admin_settings') }}" class="flex items-center gap-3 px-4 py-3 text-sm font-medium rounded-lg {{ app.request.get('_route') == 'admin_settings' ? 'bg-teal-50 text-teal-700' : 'text-gray-600 hover:bg-gray-50' }} transition-colors">
 						<i data-lucide="settings" class="w-5 h-5"></i>
 						Settings
 					</a>
@@ -49,7 +59,11 @@
 				<i data-lucide="file-text" class="w-6 h-6"></i>
 				<span class="text-[10px] font-bold">Posts</span>
 			</a>
-			<a href="#" class="flex flex-col items-center gap-1 text-gray-400">
+			<a href="{{ path('admin_profile') }}" class="flex flex-col items-center gap-1 {{ app.request.get('_route') == 'admin_profile' ? 'text-teal-600' : 'text-gray-400' }}">
+				<i data-lucide="user-circle" class="w-6 h-6"></i>
+				<span class="text-[10px] font-bold">Profile</span>
+			</a>
+			<a href="{{ path('admin_settings') }}" class="flex flex-col items-center gap-1 {{ app.request.get('_route') == 'admin_settings' ? 'text-teal-600' : 'text-gray-400' }}">
 				<i data-lucide="settings" class="w-6 h-6"></i>
 				<span class="text-[10px] font-bold">Settings</span>
 			</a>

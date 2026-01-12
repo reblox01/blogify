@@ -8,6 +8,7 @@ use App\Entity\Annotation;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
 use App\Repository\AnnotationRepository;
+use App\Service\ImageEncryptionService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -43,7 +44,7 @@ class AdminController extends AbstractController
     }
 
     #[Route('/profile', name: 'profile')]
-    public function profile(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
+    public function profile(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher, ImageEncryptionService $encryptionService): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
         /** @var User $user */
@@ -57,6 +58,16 @@ class AdminController extends AbstractController
                 $user->setPassword($hasher->hashPassword($user, $request->request->get('password')));
             }
 
+            // Handle Base64 Cropped Avatar
+            $croppedAvatar = $request->request->get('cropped_avatar');
+            if ($croppedAvatar) {
+                $imageData = $this->processBase64Image($croppedAvatar);
+                if ($imageData) {
+                    $user->setAvatarData($encryptionService->encrypt($imageData['data']));
+                    $user->setAvatarMimeType($imageData['mimeType']);
+                }
+            }
+
             $em->flush();
             $this->addFlash('success', 'Profile updated successfully.');
         }
@@ -64,6 +75,25 @@ class AdminController extends AbstractController
         return $this->render('admin/profile.html.twig', [
             'user' => $user,
         ]);
+    }
+
+    private function processBase64Image(string $base64String): ?array
+    {
+        if (preg_match('/^data:(image\/\w+);base64,/', $base64String, $matches)) {
+            $mimeType = $matches[1];
+            $data = substr($base64String, strpos($base64String, ',') + 1);
+            $decodedData = base64_decode($data);
+
+            if ($decodedData === false) {
+                return null;
+            }
+
+            return [
+                'data' => $decodedData,
+                'mimeType' => $mimeType
+            ];
+        }
+        return null;
     }
 
     #[Route('/settings', name: 'settings')]

@@ -1,160 +1,330 @@
 {% extends 'author/layout.html.twig' %}
 
-{% block title %}Edit Post - Author Dashboard{% endblock %}
+{% block title %}Edit Post - Author Dashboard
+{% endblock %}
 
 {% block author_content %}
-    {# TinyMCE CDN #}
-    <script src="https://cdn.tiny.cloud/1/{{ tinymce_api_key }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
-    {# Cropper.js CDN #}
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
+{# TinyMCE CDN #}
+<script src="https://cdn.tiny.cloud/1/{{ tinymce_api_key }}/tinymce/6/tinymce.min.js" referrerpolicy="origin"></script>
+{# Cropper.js CDN #}
+<link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
 
-    <div class="mb-8">
-        <h1 class="text-2xl font-bold text-gray-900">Edit Post</h1>
-        <p class="text-sm text-gray-500 mt-1">Refine your content.</p>
-    </div>
+<div
+	class="flex flex-col lg:flex-row gap-8">
+	{# Left Column: Editor Form #}
+	<div class="flex-1">
+		<div class="bg-white border border-gray-200 rounded-2xl shadow-sm p-6 lg:p-10 mb-8">
+			{{ form_start(form, {'attr': {'class': 'space-y-8', 'id': 'postForm'}}) }}
 
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm p-6 max-w-4xl">
-        {{ form_start(form, {'attr': {'class': 'space-y-6', 'id': 'postForm'}}) }}
-        
-        <div class="form-control w-full">
-            <label class="label">
-                <span class="label-text font-medium text-gray-700">Title</span>
-            </label>
-            {{ form_widget(form.title, {'attr': {'class': 'input input-bordered w-full focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent'}}) }}
-             {{ form_errors(form.title, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
-        </div>
+			<div class="form-control w-full">
+				<label class="label">
+					<span class="label-text font-bold text-gray-700">Post Title</span>
+				</label>
+				{{ form_widget(form.title, {'attr': {'class': 'input input-bordered w-full focus:ring-2 focus:ring-teal-500 rounded-xl bg-gray-50/50'}}) }}
+				{{ form_errors(form.title, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
+			</div>
 
-        <div class="form-control w-full">
-            <label class="label">
-                <span class="label-text font-medium text-gray-700">Cover Image</span>
-            </label>
-            
-            <div class="flex flex-col gap-4">
-                {{ form_widget(form.imageFile, {'id': 'imageInput', 'attr': {'class': 'hidden', 'accept': 'image/*'}}) }}
-                <input type="hidden" name="cropped_image" id="croppedImage">
+			<div class="form-control w-full">
+				<label class="label">
+					<span class="label-text font-bold text-gray-700">Cover Image</span>
+				</label>
 
-                <div id="dropzone" class="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center hover:bg-gray-50 transition-colors cursor-pointer">
-                    
-                    {# Initially show upload placeholder if no image, or if image exists, show it #}
-                    <div id="uploadPlaceholder" class="{{ post.imagePath ? 'hidden' : '' }}">
-                        <i data-lucide="image-plus" class="w-8 h-8 mx-auto text-gray-400 mb-2"></i>
-                        <p class="text-sm text-gray-500">Click to change cover image</p>
-                        <p class="text-xs text-gray-400 mt-1">Recommended: 1200x630px</p>
-                    </div>
+				<div class="flex flex-col gap-4">
+					{{ form_widget(form.imageFile, {'id': 'imageInput', 'attr': {'class': 'hidden', 'accept': 'image/*'}}) }}
+					<input type="hidden" name="cropped_image" id="croppedImage">
 
-                    <img id="imagePreview" 
-                         src="{{ post.imageData ? path('post_image', {id: post.id}) : (post.imagePath ? asset('images/' ~ post.imagePath) : '') }}" 
-                         class="{{ post.imageData or post.imagePath ? '' : 'hidden' }} max-h-64 mx-auto rounded-lg shadow-sm" />
-                </div>
-            </div>
-             {{ form_errors(form.imageFile, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
-        </div>
+					<div id="dropzone" class="group border-2 border-dashed border-gray-200 rounded-2xl p-8 text-center hover:border-teal-400 hover:bg-teal-50/30 transition-all cursor-pointer bg-gray-50/50">
+						<div id="uploadPlaceholder" class="{{ post.imageData or post.imagePath ? 'hidden' : '' }}">
+							<div class="w-16 h-16 bg-teal-100 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:scale-110 transition-transform">
+								<i data-lucide="image-plus" class="w-8 h-8 text-teal-600"></i>
+							</div>
+							<p class="text-sm font-bold text-gray-700">Change cover image</p>
+							<p class="text-xs text-gray-400 mt-1">PNG, JPG up to 10MB • 16:9 Recommended</p>
+						</div>
 
-        <div class="form-control w-full">
-            <label class="label">
-                <span class="label-text font-medium text-gray-700">Content</span>
-            </label>
-            {{ form_widget(form.description, {'id': 'descriptionEditor', 'attr': {'class': 'textarea textarea-bordered h-64 hidden'}}) }}
-            {{ form_errors(form.description, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
-        </div>
+						<img id="imagePreview" src="{{ post.imageData ? path('post_image', {id: post.id}) : (post.imagePath ? asset('images/' ~ post.imagePath) : '') }}" class="{{ post.imageData or post.imagePath ? '' : 'hidden' }} max-h-[400px] w-full object-cover rounded-xl shadow-lg border-4 border-white"/>
+					</div>
+				</div>
+				{{ form_errors(form.imageFile, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
+			</div>
 
-        <div class="flex items-center justify-end gap-3 pt-4 border-t border-gray-100">
-            <a href="{{ path('author_dashboard') }}" class="btn btn-ghost text-gray-600">Cancel</a>
-             <button type="submit" class="btn bg-teal-600 hover:bg-teal-700 text-white border-none min-w-[120px]">
-                Save Changes
-            </button>
-        </div>
-        {{ form_end(form) }}
-    </div>
+			<div class="form-control w-full">
+				<label class="label">
+					<span class="label-text font-bold text-gray-700">Content Body</span>
+				</label>
+				<div class="rounded-xl overflow-hidden border border-gray-200">
+					{{ form_widget(form.description, {'id': 'descriptionEditor', 'attr': {'class': 'textarea textarea-bordered h-96 hidden'}}) }}
+				</div>
+				{{ form_errors(form.description, {'attr': {'class': 'text-red-500 text-xs mt-1'}}) }}
+			</div>
 
-    {# Crop Modal (Same as Create) #}
-    <div id="cropModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
-        <div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
-        <div class="fixed inset-0 z-10 overflow-y-auto">
-             <div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
-                <div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
-                    <div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
-                        <div class="h-96 w-full">
-                             <img id="imageToCrop" class="max-w-full h-full block" src="">
-                        </div>
-                    </div>
-                    <div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
-                        <button type="button" id="cropBtn" class="inline-flex w-full justify-center rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 sm:ml-3 sm:w-auto">Crop & Save</button>
-                        <button type="button" onclick="closeCropModal()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
+			<div class="flex items-center justify-between pt-8 border-t border-gray-100">
+				<div class="text-xs text-gray-400">
+					<span class="flex items-center gap-1">
+						<i data-lucide="info" class="w-3 h-3"></i>
+						Changes are saved as a draft.
+					</span>
+				</div>
+				<div class="flex items-center gap-3">
+					<a href="{{ path('author_dashboard') }}" class="btn btn-ghost hover:bg-gray-100 rounded-xl text-gray-500">Cancel</a>
+					<button type="submit" class="btn bg-teal-600 hover:bg-teal-700 text-white border-none rounded-xl px-8 shadow-md shadow-teal-100">
+						Save Changes
+					</button>
+				</div>
+			</div>
+			{{ form_end(form) }}
+		</div>
+	</div>
 
-    <script>
-        console.log("TinyMCE API Key:", "{{ tinymce_api_key }}");
+	{# Right Column: Annotation Sidebar #}
+	<div class="w-full lg:w-96 shrink-0">
+		<div class="sticky top-24 space-y-6">
+			<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+				<div class="p-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+					<div class="flex items-center gap-2">
+						<i data-lucide="message-square" class="w-5 h-5 text-teal-600"></i>
+						<h2 class="font-bold text-gray-900">Moderation Feedback</h2>
+					</div>
+					<span id="annCount" class="bg-teal-100 text-teal-700 text-xs font-bold px-2.5 py-1 rounded-full">0</span>
+				</div>
 
-        // Init TinyMCE
-        tinymce.init({
-            selector: '#descriptionEditor',
-            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
-            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
-            height: 400,
-            convert_urls: false,
-             setup: function (editor) {
-                editor.on('change', function () {
-                    tinymce.triggerSave();
-                });
-            }
-        });
+				<div
+					id="annotationList" class="divide-y divide-gray-100 max-h-[calc(100vh-300px)] overflow-y-auto">
+					{# Annotations will be loaded here #}
+					<div id="emptyAnn" class="p-10 text-center">
+						<div class="w-12 h-12 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-3">
+							<i data-lucide="check-check" class="w-6 h-6 text-gray-400"></i>
+						</div>
+						<p class="text-sm text-gray-500 font-medium">No active feedback</p>
+						<p class="text-xs text-gray-400 mt-1">Your post is looking good!</p>
+					</div>
+				</div>
+			</div>
 
-         // --- Cropper Logic (Same as Create) ---
-        let cropper;
-        const imageInput = document.getElementById('imageInput');
-        const dropzone = document.getElementById('dropzone');
-        const cropModal = document.getElementById('cropModal');
-        const imageToCrop = document.getElementById('imageToCrop');
-        const imagePreview = document.getElementById('imagePreview');
-        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
-        const cropBtn = document.getElementById('cropBtn');
-        const croppedImageInput = document.getElementById('croppedImage');
+			{# Legend for Author #}
+			<div class="bg-indigo-50/50 border border-indigo-100 rounded-2xl p-5">
+				<h3 class="text-xs font-bold text-indigo-900 uppercase tracking-wider mb-3">Next Steps</h3>
+				<ul class="space-y-3">
+					<li class="flex gap-3 text-xs text-indigo-800 leading-relaxed">
+						<span class="w-5 h-5 bg-indigo-100 rounded flex items-center justify-center shrink-0">1</span>
+						Review the highlighted feedback from moderators in the sidebar.
+					</li>
+					<li class="flex gap-3 text-xs text-indigo-800 leading-relaxed">
+						<span class="w-5 h-5 bg-indigo-100 rounded flex items-center justify-center shrink-0">2</span>
+						Update your post content accordingly in the editor.
+					</li>
+					<li class="flex gap-3 text-xs text-indigo-800 leading-relaxed">
+						<span class="w-5 h-5 bg-indigo-100 rounded flex items-center justify-center shrink-0">3</span>
+						Mark items as resolved once you've addressed them.
+					</li>
+				</ul>
+			</div>
+		</div>
+	</div>
+</div>
 
-        if (!imageInput) console.error("Could not find imageInput element");
-        if (!dropzone) console.error("Could not find dropzone element");
 
-        dropzone.addEventListener('click', () => imageInput.click());
+{# Crop Modal (Same as Create) #}
+<div id="cropModal" class="relative z-50 hidden" aria-labelledby="modal-title" role="dialog" aria-modal="true">
+	<div class="fixed inset-0 bg-gray-500 bg-opacity-75 transition-opacity"></div>
+	<div class="fixed inset-0 z-10 overflow-y-auto">
+		<div class="flex min-h-full items-end justify-center p-4 text-center sm:items-center sm:p-0">
+			<div class="relative transform overflow-hidden rounded-lg bg-white text-left shadow-xl transition-all sm:my-8 sm:w-full sm:max-w-3xl">
+				<div class="bg-white px-4 pb-4 pt-5 sm:p-6 sm:pb-4">
+					<div class="h-96 w-full">
+						<img id="imageToCrop" class="max-w-full h-full block" src="">
+					</div>
+				</div>
+				<div class="bg-gray-50 px-4 py-3 sm:flex sm:flex-row-reverse sm:px-6">
+					<button type="button" id="cropBtn" class="inline-flex w-full justify-center rounded-md bg-teal-600 px-3 py-2 text-sm font-semibold text-white shadow-sm hover:bg-teal-500 sm:ml-3 sm:w-auto">Crop & Save</button>
+					<button type="button" onclick="closeCropModal()" class="mt-3 inline-flex w-full justify-center rounded-md bg-white px-3 py-2 text-sm font-semibold text-gray-900 shadow-sm ring-1 ring-inset ring-gray-300 hover:bg-gray-50 sm:mt-0 sm:w-auto">Cancel</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
 
-        imageInput.addEventListener('change', function(e) {
-            console.log("File selected");
-            const files = e.target.files;
-            if (files && files.length > 0) {
-                const url = URL.createObjectURL(files[0]);
-                imageToCrop.src = url;
-                showCropModal();
-                
-                 if (cropper) {
-                    cropper.destroy();
-                }
-                cropper = new Cropper(imageToCrop, {
-                    aspectRatio: 16 / 9,
-                    viewMode: 1,
-                    autoCropArea: 1,
-                });
-            }
-        });
-
-        cropBtn.addEventListener('click', function() {
-            if (!cropper) return;
-            const canvas = cropper.getCroppedCanvas({
-                width: 1200, height: 675,
-            });
-            const base64Image = canvas.toDataURL('image/jpeg', 0.8);
-            
-            imagePreview.src = base64Image;
-            imagePreview.classList.remove('hidden');
-            uploadPlaceholder.classList.add('hidden');
-            croppedImageInput.value = base64Image;
-            closeCropModal();
-        });
-
-        function showCropModal() { cropModal.classList.remove('hidden'); }
-        function closeCropModal() { cropModal.classList.add('hidden'); }
-    </script>
-{% endblock %}
+<script>
+	console.log("TinyMCE API Key:", "{{ tinymce_api_key }}");
+	
+	        // Admin Color Palette (Consistent with Preview)
+	        const ADMIN_COLORS = [
+	            { name: 'Teal', primary: '#14b8a6', sidebarBg: 'bg-teal-600', text: 'text-teal-600', lightBg: 'bg-teal-50' },
+	            { name: 'Indigo', primary: '#6366f1', sidebarBg: 'bg-indigo-600', text: 'text-indigo-600', lightBg: 'bg-indigo-50' },
+	            { name: 'Rose', primary: '#f43f5e', sidebarBg: 'bg-rose-600', text: 'text-rose-600', lightBg: 'bg-rose-50' },
+	            { name: 'Amber', primary: '#f59e0b', sidebarBg: 'bg-amber-600', text: 'text-amber-600', lightBg: 'bg-amber-50' },
+	            { name: 'Violet', primary: '#8b5cf6', sidebarBg: 'bg-violet-600', text: 'text-violet-600', lightBg: 'bg-violet-50' },
+	            { name: 'Orange', primary: '#f97316', sidebarBg: 'bg-orange-600', text: 'text-orange-600', lightBg: 'bg-orange-50' }
+	        ];
+	
+	        const getAdminColor = (name) => {
+	            let hash = 0;
+	            for (let i = 0; i < name.length; i++) {
+	                hash = name.charCodeAt(i) + ((hash << 5) - hash);
+	            }
+	            return ADMIN_COLORS[Math.abs(hash) % ADMIN_COLORS.length];
+	        };
+	
+	        // Init TinyMCE
+	        tinymce.init({
+	            selector: '#descriptionEditor',
+	            plugins: 'anchor autolink charmap codesample emoticons image link lists media searchreplace table visualblocks wordcount',
+	            toolbar: 'undo redo | blocks fontfamily fontsize | bold italic underline strikethrough | link image media table | align lineheight | numlist bullist indent outdent | emoticons charmap | removeformat',
+	            height: 500,
+	            convert_urls: false,
+	            setup: function (editor) {
+	                editor.on('change', function () {
+	                    tinymce.triggerSave();
+	                });
+	            }
+	        });
+	
+	        // --- Annotation Logic ---
+	        const annotationList = document.getElementById('annotationList');
+	        const annCount = document.getElementById('annCount');
+	        const emptyAnn = document.getElementById('emptyAnn');
+	
+	        const renderAnnotation = (ann) => {
+	            const color = getAdminColor(ann.author);
+	            const isResolved = ann.resolved;
+	            
+	            const html = `
+	                <div class="p-5 hover:bg-gray-50/80 transition-colors relative group ${isResolved ? 'opacity-50 grayscale' : ''}" data-id="${ann.id}">
+	                    <div class="flex items-center justify-between mb-3">
+	                        <div class="flex items-center gap-2">
+	                            <div class="w-8 h-8 rounded-full ${color.sidebarBg} flex items-center justify-center text-xs text-white font-bold shadow-sm">
+	                                ${ann.author.charAt(0).toUpperCase()}
+	                            </div>
+	                            <div>
+	                                <p class="text-xs font-bold text-gray-900">${ann.author}</p>
+	                                <p class="text-[10px] text-gray-400 font-medium">${ann.time}</p>
+	                            </div>
+	                        </div>
+	                        ${!isResolved ? `
+	                            <button onclick="resolveAnnotation(${ann.id})" class="btn btn-xs btn-ghost text-teal-600 hover:bg-teal-50 px-2 rounded-lg gap-1.5 h-7">
+	                                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i>
+	                                <span class="text-[10px]">Resolve</span>
+	                            </button>
+	                        ` : `
+	                            <span class="flex items-center gap-1 text-[10px] font-bold text-gray-400 mr-2">
+	                                <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+	                                Resolved
+	                            </span>
+	                        `}
+	                    </div>
+	                    
+	                    ${ann.text ? `
+	                        <div class="bg-gray-50 border-l-3 px-3 py-2 rounded-r-lg mb-3" style="border-left: 3px solid ${color.primary}">
+	                            <p class="text-xs italic text-gray-500 line-clamp-2 leading-relaxed">"${ann.text}"</p>
+	                        </div>
+	                    ` : ''}
+	                    
+	                    <p class="text-sm text-gray-700 leading-relaxed">${ann.content}</p>
+	                </div>
+	            `;
+	            
+	            if (emptyAnn) emptyAnn.remove();
+	            annotationList.insertAdjacentHTML('beforeend', html);
+	            if (window.lucide) window.lucide.createIcons();
+	        };
+	
+	        const loadAnnotations = () => {
+	            const annotations = [
+	                {% for ann in post.annotations %}
+	                {
+	                    id: {{ ann.id }},
+	                    author: "{{ ann.author.name|escape('js') }}",
+	                    time: "{{ ann.createdAt|date('M d, Y H:i') }}",
+	                    text: "{{ ann.selectedText|escape('js') }}",
+	                    content: "{{ ann.content|escape('js') }}",
+	                    resolved: {{ ann.resolved ? 'true' : 'false' }}
+	                },
+	                {% endfor %}
+	            ];
+	
+	            const activeCount = annotations.filter(a => !a.resolved).length;
+	            annCount.innerText = activeCount;
+	
+	            if (annotations.length > 0) {
+	                annotations.sort((a,b) => b.id - a.id).forEach(renderAnnotation);
+	            }
+	        };
+	
+	        window.resolveAnnotation = async (id) => {
+	            try {
+	                const res = await fetch(`/admin/annotations/${id}/resolve`, {
+	                    method: 'POST',
+	                    headers: { 'X-Requested-With': 'XMLHttpRequest' }
+	                });
+	                if (res.ok) {
+	                    const item = document.querySelector(`[data-id="${id}"]`);
+	                    if (item) {
+	                        item.classList.add('opacity-50', 'grayscale', 'transition-all', 'duration-500');
+	                        const btn = item.querySelector('button');
+	                        if (btn) {
+	                            btn.outerHTML = `
+	                                <span class="flex items-center gap-1 text-[10px] font-bold text-gray-400 mr-2 animate-in fade-in duration-500">
+	                                    <i data-lucide="check-check" class="w-3.5 h-3.5"></i>
+	                                    Resolved
+	                                </span>
+	                            `;
+	                            if (window.lucide) window.lucide.createIcons();
+	                        }
+	                    }
+	                    annCount.innerText = Math.max(0, parseInt(annCount.innerText) - 1);
+	                } else {
+	                    alert('Failed to resolve feedback.');
+	                }
+	            } catch (err) {
+	                console.error(err);
+	                alert('Connection error.');
+	            }
+	        };
+	
+	        // --- Cropper Logic ---
+	        let cropper;
+	        const imageInput = document.getElementById('imageInput');
+	        const dropzone = document.getElementById('dropzone');
+	        const cropModal = document.getElementById('cropModal');
+	        const imageToCrop = document.getElementById('imageToCrop');
+	        const imagePreview = document.getElementById('imagePreview');
+	        const uploadPlaceholder = document.getElementById('uploadPlaceholder');
+	        const cropBtn = document.getElementById('cropBtn');
+	        const croppedImageInput = document.getElementById('croppedImage');
+	
+	        dropzone.addEventListener('click', () => imageInput.click());
+	
+	        imageInput.addEventListener('change', function(e) {
+	            const files = e.target.files;
+	            if (files && files.length > 0) {
+	                const url = URL.createObjectURL(files[0]);
+	                imageToCrop.src = url;
+	                cropModal.classList.remove('hidden');
+	                
+	                if (cropper) cropper.destroy();
+	                cropper = new Cropper(imageToCrop, {
+	                    aspectRatio: 16 / 9,
+	                    viewMode: 1,
+	                    autoCropArea: 1,
+	                });
+	            }
+	        });
+	
+	        cropBtn.addEventListener('click', function() {
+	            if (!cropper) return;
+	            const canvas = cropper.getCroppedCanvas({ width: 1200, height: 675 });
+	            const base64Image = canvas.toDataURL('image/jpeg', 0.8);
+	            imagePreview.src = base64Image;
+	            imagePreview.classList.remove('hidden');
+	            uploadPlaceholder.classList.add('hidden');
+	            croppedImageInput.value = base64Image;
+	            cropModal.classList.add('hidden');
+	        });
+	
+	        function closeCropModal() { cropModal.classList.add('hidden'); }
+	
+	        // Init
+	        loadAnnotations();
+	    </script>
+	{% endblock %}

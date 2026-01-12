@@ -14,6 +14,7 @@ use Symfony\Component\String\Slugger\SluggerInterface;
 use Symfony\Component\HttpFoundation\File\Exception\FileException;
 use Symfony\Component\HttpFoundation\File\UploadedFile;
 use App\Service\ImageEncryptionService;
+use App\Entity\User;
 
 #[Route('/author', name: 'author_')]
 class AuthorController extends AbstractController
@@ -150,6 +151,40 @@ class AuthorController extends AbstractController
 
         $this->addFlash('success', 'Post deleted successfully.');
         return $this->redirectToRoute('author_dashboard');
+    }
+
+    #[Route('/profile', name: 'profile')]
+    public function profile(Request $request, EntityManagerInterface $em, \Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface $hasher, ImageEncryptionService $encryptionService): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_AUTHOR');
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if ($request->isMethod('POST')) {
+            $user->setName($request->request->get('name'));
+            $user->setBiography($request->request->get('biography'));
+
+            if ($request->request->get('password')) {
+                $user->setPassword($hasher->hashPassword($user, $request->request->get('password')));
+            }
+
+            // Handle Base64 Cropped Avatar
+            $croppedAvatar = $request->request->get('cropped_avatar');
+            if ($croppedAvatar) {
+                $imageData = $this->processBase64Image($croppedAvatar);
+                if ($imageData) {
+                    $user->setAvatarData($encryptionService->encrypt($imageData['data']));
+                    $user->setAvatarMimeType($imageData['mimeType']);
+                }
+            }
+
+            $em->flush();
+            $this->addFlash('success', 'Profile updated successfully.');
+        }
+
+        return $this->render('author/profile.html.twig', [
+            'user' => $user,
+        ]);
     }
 
     private function processBase64Image(string $base64String): ?array

@@ -38,6 +38,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(type: 'string', length: 255, nullable: true)]
     private ?string $avatar = null;
 
+    #[ORM\Column(name: 'avatar_data', type: 'text', nullable: true)]
+    private ?string $avatarData = null;
+
+    #[ORM\Column(name: 'avatar_mime_type', type: 'string', length: 50, nullable: true)]
+    private ?string $avatarMimeType = null;
+
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'user')]
     private Collection $posts;
 
@@ -170,6 +176,30 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setAvatar(?string $avatar): self
     {
         $this->avatar = $avatar;
+
+        return $this;
+    }
+
+    public function getAvatarData(): ?string
+    {
+        return $this->avatarData;
+    }
+
+    public function setAvatarData(?string $avatarData): self
+    {
+        $this->avatarData = $avatarData;
+
+        return $this;
+    }
+
+    public function getAvatarMimeType(): ?string
+    {
+        return $this->avatarMimeType;
+    }
+
+    public function setAvatarMimeType(?string $avatarMimeType): self
+    {
+        $this->avatarMimeType = $avatarMimeType;
 
         return $this;
     }
