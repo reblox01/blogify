@@ -1,18 +1,123 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="max-w-md mx-auto bg-white rounded shadow p-6">
-        <h1 class="text-2xl font-bold mb-4">Create account</h1>
-        {{ form_start(registrationForm, {'attr': {'id': 'register-form', 'novalidate': 'novalidate'}}) }}
-            <div class="space-y-4">
-                {{ form_row(registrationForm.name, {'attr': {'class': 'mt-1 block w-full rounded border-gray-300'}}) }}
-                {{ form_row(registrationForm.email, {'attr': {'class': 'mt-1 block w-full rounded border-gray-300'}}) }}
-                {{ form_row(registrationForm.plainPassword, {'attr': {'class': 'mt-1 block w-full rounded border-gray-300'}}) }}
-            </div>
-            <div class="mt-4">
-                <button class="bg-green-600 text-white px-4 py-2 rounded" type="submit">Register</button>
-            </div>
-        {{ form_end(registrationForm) }}
-    </div>
-{% endblock %}
+	<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+		<div
+			class="max-w-md w-full space-y-8 relative">
+			<!-- Background decorative elements -->
+			<div class="absolute -top-10 -right-10 w-32 h-32 bg-teal-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
+			<div class="absolute -bottom-10 -left-10 w-32 h-32 bg-cyan-200 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
 
+			<div class="bg-white/70 backdrop-blur-xl rounded-2xl shadow-2xl p-8 border border-white/20 relative z-10 transition-all duration-300 hover:shadow-teal-500/10">
+				<div class="text-center mb-10">
+					<div class="inline-flex items-center justify-center w-16 h-16 rounded-xl bg-teal-50 text-teal-600 mb-4 shadow-inner">
+						<i data-lucide="user-plus" class="w-8 h-8"></i>
+					</div>
+					<h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Create Account</h1>
+					<p class="mt-2 text-sm text-gray-500 italic">Join our community of writers and readers</p>
+				</div>
+
+				{{ form_start(registrationForm, {'attr': {'id': 'register-form', 'novalidate': 'novalidate', 'class': 'space-y-5'}}) }}
+				<div class="space-y-4">
+					<div class="space-y-1">
+						<label class="block text-sm font-semibold text-gray-700 ml-1">Full Name</label>
+						<div class="relative group">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-teal-500 transition-colors">
+								<i data-lucide="user" class="w-5 h-5"></i>
+							</div>
+							{{ form_widget(registrationForm.name, {
+                                'attr': {
+                                    'class': 'block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white/50 backdrop-blur-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-gray-900 sm:text-sm',
+                                    'placeholder': 'John Doe'
+                                }
+                            }) }}
+						</div>
+						{{ form_errors(registrationForm.name, {'attr': {'class': 'text-xs text-red-500 mt-1 ml-1'}}) }}
+					</div>
+
+					<div class="space-y-1">
+						<label class="block text-sm font-semibold text-gray-700 ml-1">Email Address</label>
+						<div class="relative group">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-teal-500 transition-colors">
+								<i data-lucide="mail" class="w-5 h-5"></i>
+							</div>
+							{{ form_widget(registrationForm.email, {
+                                'attr': {
+                                    'class': 'block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white/50 backdrop-blur-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-gray-900 sm:text-sm',
+                                    'placeholder': 'you@example.com'
+                                }
+                            }) }}
+						</div>
+						{{ form_errors(registrationForm.email, {'attr': {'class': 'text-xs text-red-500 mt-1 ml-1'}}) }}
+					</div>
+
+					<div class="space-y-1">
+						<label class="block text-sm font-semibold text-gray-700 ml-1">Password</label>
+						<div class="relative group">
+							<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-gray-400 group-focus-within:text-teal-500 transition-colors">
+								<i data-lucide="lock" class="w-5 h-5"></i>
+							</div>
+							{{ form_widget(registrationForm.plainPassword, {
+                                'attr': {
+                                    'class': 'block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-white/50 backdrop-blur-sm placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-teal-500 focus:border-transparent transition-all duration-200 text-gray-900 sm:text-sm',
+                                    'placeholder': '••••••••'
+                                }
+                            }) }}
+						</div>
+						{{ form_errors(registrationForm.plainPassword, {'attr': {'class': 'text-xs text-red-500 mt-1 ml-1'}}) }}
+					</div>
+				</div>
+
+				<div class="flex items-center mt-2 px-1">
+					<input id="terms" type="checkbox" required class="h-4 w-4 text-teal-600 focus:ring-teal-500 border-gray-300 rounded cursor-pointer">
+					<label for="terms" class="ml-2 block text-xs text-gray-600 cursor-pointer">
+						I agree to the
+						<a href="#" class="text-teal-600 font-bold hover:underline">Terms of Service</a>
+						and
+						<a href="#" class="text-teal-600 font-bold hover:underline">Privacy Policy</a>
+					</label>
+				</div>
+
+				<button type="submit" class="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-bold rounded-xl text-white bg-teal-600 hover:bg-teal-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-teal-500 transition-all duration-200 shadow-lg shadow-teal-500/30 active:scale-[0.98] mt-6">
+					<span class="absolute left-0 inset-y-0 flex items-center pl-3">
+						<i data-lucide="sparkles" class="w-5 h-5 text-teal-400 group-hover:text-teal-300 transition-colors"></i>
+					</span>
+					Create Account
+				</button>
+				{{ form_end(registrationForm) }}
+
+				<div class="mt-8 pt-6 border-t border-gray-100 text-center">
+					<p class="text-sm text-gray-600">
+						Already have an account?
+						<a href="{{ path('app_login') }}" class="font-bold text-teal-600 hover:text-teal-500 transition-colors underline underline-offset-4 decoration-2 decoration-teal-100 hover:decoration-teal-500">
+							Sign in instead
+						</a>
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<style>
+		@keyframes blob {
+			0% {
+				transform: translate(0px, 0px) scale(1);
+			}
+			33% {
+				transform: translate(30px, -50px) scale(1.1);
+			}
+			66% {
+				transform: translate(-20px, 20px) scale(0.9);
+			}
+			100% {
+				transform: translate(0px, 0px) scale(1);
+			}
+		}
+		.animate-blob {
+			animation: blob 7s infinite;
+		}
+		.animation-delay-2000 {
+			animation-delay: 2s;
+		}
+	</style>
+{% endblock %}
