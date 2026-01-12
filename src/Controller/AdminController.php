@@ -207,4 +207,15 @@ class AdminController extends AbstractController
 
         return new JsonResponse(['status' => 'success']);
     }
+
+    #[Route('/annotations/{id}/delete', name: 'annotation_delete', methods: ['POST', 'DELETE'])]
+    public function deleteAnnotation(Annotation $annotation, EntityManagerInterface $em): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $em->remove($annotation);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success']);
+    }
 }
