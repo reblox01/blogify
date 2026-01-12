@@ -12,9 +12,9 @@
 		</a>
 		<div class="flex gap-2">
 			<span class="px-3 py-1 text-sm rounded-full font-medium
-					                {% if post.status == 'published' %}bg-green-100 text-green-800
-					                {% elseif post.status == 'rejected' %}bg-red-100 text-red-800
-					                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+										                {% if post.status == 'published' %}bg-green-100 text-green-800
+										                {% elseif post.status == 'rejected' %}bg-red-100 text-red-800
+										                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
 				Status:
 				{{ post.status|capitalize }}
 			</span>
@@ -202,7 +202,7 @@
 
 		.highlight-annotation {
 			background-color: var(--ann-bg, rgba(20, 184, 166, 0.1));
-			border-bottom: 2px solid var(--ann-color, #14b8a6);
+			border-bottom: 2px dashed var(--ann-color, #14b8a6);
 			cursor: pointer;
 			transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
 			position: relative;
@@ -352,6 +352,7 @@ while (node) {
 if (node === parent) 
 return true;
 
+
 node = node.parentNode;
 }
 return false;
@@ -493,6 +494,7 @@ if (! content)
 return;
 
 
+
 const btn = document.querySelector('#annotation_modal .btn-primary');
 const originalText = btn.innerHTML;
 btn.disabled = true;
@@ -599,6 +601,7 @@ count.innerText = parseInt(count.innerText) + 1;
 if (window.lucide) 
 window.lucide.createIcons();
 
+
 };
 
 window.resolveAnnotation = async (id) => {
@@ -671,6 +674,7 @@ console.error(err);
 restoreHighlights();
 if (window.lucide) 
 window.lucide.createIcons();
+
 
 });
 	</script>
