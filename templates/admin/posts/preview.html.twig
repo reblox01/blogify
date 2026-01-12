@@ -12,9 +12,9 @@
 		</a>
 		<div class="flex gap-2">
 			<span class="px-3 py-1 text-sm rounded-full
-										                {% if post.status == 'published' %}bg-green-100 text-green-800
-										                {% elseif post.status == 'rejected' %}bg-red-100 text-red-800
-										                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
+															                {% if post.status == 'published' %}bg-green-100 text-green-800
+															                {% elseif post.status == 'rejected' %}bg-red-100 text-red-800
+															                {% else %}bg-yellow-100 text-yellow-800{% endif %}">
 				Status:
 				{{ post.status|capitalize }}
 			</span>
@@ -63,22 +63,29 @@
 					<i data-lucide="shield" class="w-4 h-4"></i>
 					Review Moderation
 				</div>
-				<div class="flex gap-3">
-					<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
-						<input type="hidden" name="status" value="rejected">
-						<button type="submit" class="btn btn-sm btn-error btn-outline gap-2 rounded-lg">
-							<i data-lucide="x" class="w-4 h-4"></i>
-							Reject
-						</button>
-					</form>
-					<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
-						<input type="hidden" name="status" value="published">
-						<button type="submit" class="btn btn-sm btn-success text-white gap-2 rounded-lg shadow-sm">
-							<i data-lucide="check" class="w-4 h-4"></i>
-							Approve
-						</button>
-					</form>
-				</div>
+				{% if post.status != 'published' %}
+					<div class="flex gap-3">
+						<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
+							<input type="hidden" name="status" value="rejected">
+							<button type="submit" class="btn btn-sm btn-error btn-outline gap-2 rounded-lg">
+								<i data-lucide="x" class="w-4 h-4"></i>
+								Reject
+							</button>
+						</form>
+						<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
+							<input type="hidden" name="status" value="published">
+							<button type="submit" class="btn btn-sm btn-success text-white gap-2 rounded-lg shadow-sm">
+								<i data-lucide="check" class="w-4 h-4"></i>
+								Approve
+							</button>
+						</form>
+					</div>
+				{% else %}
+					<div class="flex items-center gap-2 text-green-600 font-bold text-sm">
+						<i data-lucide="check-circle-2" class="w-4 h-4"></i>
+						Post Published
+					</div>
+				{% endif %}
 			</div>
 		</div>
 
@@ -186,167 +193,200 @@
 			border-bottom: 2px solid #14b8a6;
 			cursor: pointer;
 		}
-        #post-body a {
-            color: #14b8a6;
-            text-decoration: underline;
-            text-underline-offset: 4px;
-            font-weight: 700;
-            transition: all 0.2s;
-        }
-        #post-body a:hover {
-            color: #0d9488;
-            background-color: rgba(20, 184, 166, 0.05);
-            border-radius: 4px;
-        }
+		#post-body a {
+			color: #14b8a6;
+			text-decoration: underline;
+			text-underline-offset: 4px;
+			font-weight: 700;
+			transition: all 0.2s;
+		}
+		#post-body a:hover {
+			color: #0d9488;
+			background-color: rgba(20, 184, 166, 0.05);
+			border-radius: 4px;
+		}
 	</style>
 
 	<script>
 		let currentSelection = null;
 
-		document.addEventListener('DOMContentLoaded', () => {
-			const previewBody = document.getElementById('post-body');
-			const floatingBtn = document.getElementById('floating-comment-btn');
+document.addEventListener('DOMContentLoaded', () => {
+const previewBody = document.getElementById('post-body');
+const floatingBtn = document.getElementById('floating-comment-btn');
 
-			const handleSelection = (e) => {
-				const selection = window.getSelection();
-				const text = selection.toString().trim();
+const handleSelection = (e) => {
+const selection = window.getSelection();
+const text = selection.toString().trim();
 
-				if (text && selection.rangeCount > 0 && isInside(selection.anchorNode, previewBody)) {
-					currentSelection = {
-						text: text,
-						range: selection.getRangeAt(0).cloneRange()
-					}
+if (text && selection.rangeCount > 0 && isInside(selection.anchorNode, previewBody)) {
+currentSelection = {
+text: text,
+range: selection.getRangeAt(0).cloneRange()
+}
 
-					const rect = selection.getRangeAt(0).getBoundingClientRect();
-					
-					// Position relative to viewport + scroll
-					floatingBtn.style.left = `${rect.left + (rect.width / 2) - 20}px`;
-					floatingBtn.style.top = `${rect.top + window.scrollY - 55}px`;
-					
-					floatingBtn.classList.remove('hidden');
-					floatingBtn.classList.add('animate-bounce-subtle');
-				} else {
-					if (e && e.target && e.target.closest('#floating-comment-btn')) return;
-					floatingBtn.classList.add('hidden');
-				}
-			};
+const rect = selection.getRangeAt(0).getBoundingClientRect();
 
-			document.addEventListener('mouseup', handleSelection);
-			
-			// Handle selection via keyboard
-			document.addEventListener('keyup', (e) => {
-				if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Home', 'End'].includes(e.key)) {
-					handleSelection();
-				}
-			});
+// Position relative to viewport (since it's a 'fixed' element)
+floatingBtn.style.left = `${
+rect.left + (rect.width / 2) - 20
+}px`;
+floatingBtn.style.top = `${
+rect.top - 55
+}px`;
 
-			floatingBtn.addEventListener('click', (e) => {
-				e.preventDefault();
-				e.stopPropagation();
-				document.getElementById('selected-text-preview').innerText = `"${currentSelection.text}"`;
-				annotation_modal.showModal();
-				floatingBtn.classList.add('hidden');
-				setTimeout(() => document.getElementById('annotation-content').focus(), 100);
-			});
-		});
+floatingBtn.classList.remove('hidden');
+floatingBtn.classList.add('animate-bounce-subtle');
+} else {
+if (e && e.target && e.target.closest('#floating-comment-btn')) 
+return;
 
-		function isInside(node, parent) {
-			while (node) {
-				if (node === parent) return true;
-				node = node.parentNode;
-			}
-			return false;
-		}
+floatingBtn.classList.add('hidden');
+}
+};
 
-		async function submitAnnotation() {
-			const content = document.getElementById('annotation-content').value.trim();
-			if (!content) return;
+document.addEventListener('mouseup', handleSelection);
 
-			const submitBtn = document.querySelector('#annotation_modal .btn-primary');
-			const originalHtml = submitBtn.innerHTML;
-			
-			submitBtn.disabled = true;
-			submitBtn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Posting...';
+// Handle selection via keyboard
+document.addEventListener('keyup', (e) => {
+if ([
+'ArrowLeft',
+'ArrowRight',
+'ArrowUp',
+'ArrowDown',
+'Home',
+'End'
+].includes(e.key)) {
+handleSelection();
+}
+});
 
-			try {
-				const response = await fetch("{{ path('admin_post_annotate', {id: post.id}) }}", {
-					method: 'POST',
-					headers: {
-						'Content-Type': 'application/json'
-					},
-					body: JSON.stringify({
-						content: content,
-						selectedText: currentSelection.text,
-						contextData: {}
-					})
-				});
+floatingBtn.addEventListener('click', (e) => {
+e.preventDefault();
+e.stopPropagation();
+document.getElementById('selected-text-preview').innerText = `"${
+currentSelection.text
+}"`;
+annotation_modal.showModal();
+floatingBtn.classList.add('hidden');
+setTimeout(() => document.getElementById('annotation-content').focus(), 100);
+});
+});
 
-				const data = await response.json();
-				if (data.status === 'success') {
-					addAnnotationToList(data.annotation);
-					annotation_modal.close();
-					document.getElementById('annotation-content').value = '';
-					const noMsg = document.getElementById('no-annotations-msg');
-					if (noMsg) noMsg.remove();
-					
-					// Flash success state?
-				} else {
-					throw new Error(data.message || 'Failed to post');
-				}
-			} catch (error) {
-				console.error(error);
-				alert("Error: " + error.message);
-			} finally {
-				submitBtn.disabled = false;
-				submitBtn.innerHTML = originalHtml;
-			}
-		}
+function isInside(node, parent) {
+while (node) {
+if (node === parent) 
+return true;
 
-		function addAnnotationToList(ann) {
-			const list = document.getElementById('annotations-list');
-			const html = `
-				<div class="p-3 bg-white rounded-lg border border-teal-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-300" data-id="${ann.id}">
+node = node.parentNode;
+}
+return false;
+}
+
+async function submitAnnotation() {
+const content = document.getElementById('annotation-content').value.trim();
+if (! content) 
+return;
+
+
+const submitBtn = document.querySelector('#annotation_modal .btn-primary');
+const originalHtml = submitBtn.innerHTML;
+
+submitBtn.disabled = true;
+submitBtn.innerHTML = '<span class="loading loading-spinner loading-xs"></span> Posting...';
+
+try {
+const response = await fetch("{{ path('admin_post_annotate', {id: post.id}) }}", {
+method: 'POST',
+headers: {
+'Content-Type': 'application/json'
+},
+body: JSON.stringify(
+{content: content, selectedText: currentSelection.text, contextData: {}}
+)
+});
+
+const data = await response.json();
+if (data.status === 'success') {
+addAnnotationToList(data.annotation);
+annotation_modal.close();
+document.getElementById('annotation-content').value = '';
+const noMsg = document.getElementById('no-annotations-msg');
+if (noMsg) 
+noMsg.remove();
+
+
+// Flash success state?
+} else {
+throw new Error(data.message || 'Failed to post');
+}
+} catch (error) {
+console.error(error);
+alert("Error: " + error.message);
+} finally {
+submitBtn.disabled = false;
+submitBtn.innerHTML = originalHtml;
+}
+}
+
+function addAnnotationToList(ann) {
+const list = document.getElementById('annotations-list');
+const html = `
+				<div class="p-3 bg-white rounded-lg border border-teal-100 shadow-sm animate-in fade-in slide-in-from-right-4 duration-300" data-id="${
+ann.id
+}">
 					<div class="flex items-center justify-between mb-2">
 						<div class="flex items-center gap-2">
 							<div class="w-6 h-6 rounded-full bg-teal-600 flex items-center justify-center text-[10px] text-white font-bold">
-								${ann.authorName.charAt(0).toUpperCase()}
+								${
+ann.authorName.charAt(0).toUpperCase()
+}
 							</div>
-							<span class="text-xs font-bold text-gray-900">${ann.authorName}</span>
+							<span class="text-xs font-bold text-gray-900">${
+ann.authorName
+}</span>
 						</div>
 						<span class="text-[10px] text-gray-400">Just now</span>
 					</div>
 					<p class="text-[10px] text-teal-600 italic bg-teal-50 px-2 py-1 rounded mb-2 line-clamp-1 border-l-2 border-teal-500">
-						"${ann.selectedText || currentSelection.text}"
+						"${
+ann.selectedText || currentSelection.text
+}"
 					</p>
-					<p class="text-sm text-gray-700 leading-relaxed">${ann.content}</p>
+					<p class="text-sm text-gray-700 leading-relaxed">${
+ann.content
+}</p>
 				</div>
 			`;
-			list.insertAdjacentHTML('afterbegin', html);
+list.insertAdjacentHTML('afterbegin', html);
 
-			const countBtn = document.getElementById('annotation-count');
-			countBtn.innerText = parseInt(countBtn.innerText) + 1;
+const countBtn = document.getElementById('annotation-count');
+countBtn.innerText = parseInt(countBtn.innerText) + 1;
 
-			if (window.lucide) window.lucide.createIcons();
-		}
+if (window.lucide) 
+window.lucide.createIcons();
 
-		async function resolveAnnotation(id) {
-			if (!confirm('Resolve this feedback?')) return;
+}
 
-			try {
-				const response = await fetch(`/admin/annotations/${id}/resolve`, {
-					method: 'POST'
-				});
-				if (response.ok) {
-					const row = document.querySelector(`[data-id="${id}"]`);
-					if (row) {
-						row.classList.add('opacity-50', 'grayscale');
-						const btn = row.querySelector('.resolve-btn');
-						if (btn) btn.remove();
-					}
-				}
-			} catch (error) {
-				console.error(error);
-			}
-		}
+async function resolveAnnotation(id) {
+if (!confirm('Resolve this feedback?')) 
+return;
+
+
+try {
+const response = await fetch (`/admin/annotations/${id}/resolve`, {method: 'POST'});
+if (response.ok) {
+const row = document.querySelector (`[data-id="${id}"]`);
+if (row) {
+row.classList.add('opacity-50', 'grayscale');
+const btn = row.querySelector('.resolve-btn');
+if (btn) 
+btn.remove();
+
+}
+}
+} catch (error) {
+console.error(error);
+}
+}
 	</script>
 {% endblock %}
