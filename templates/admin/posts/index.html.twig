@@ -1,109 +1,181 @@
 {% extends 'admin/layout.html.twig' %}
 
-{% block title %}Manage Posts - Admin{% endblock %}
+{% block title %}Manage Posts - Admin
+{% endblock %}
 
 {% block admin_content %}
-    <div class="flex justify-between items-center mb-8">
-        <div>
-            <h1 class="text-2xl font-bold text-gray-900">Post Moderation</h1>
-            <p class="text-sm text-gray-500 mt-1">Review, publish, or reject content.</p>
-        </div>
-        <div class="flex gap-2">
-            <button class="btn btn-sm btn-outline gap-2">
-                <i data-lucide="filter" class="w-4 h-4"></i> Filter
-            </button>
-        </div>
-    </div>
+	<div class="flex justify-between items-center mb-8">
+		<div>
+			<h1 class="text-2xl font-bold text-gray-900">Post Moderation</h1>
+			<p class="text-sm text-gray-500 mt-1">Review, publish, or reject content.</p>
+		</div>
+		<div class="flex gap-2">
+			<button class="btn btn-sm btn-outline gap-2">
+				<i data-lucide="filter" class="w-4 h-4"></i>
+			</button>
+			<button class="btn btn-sm btn-outline gap-2">
+				<i data-lucide="refresh-ccw" class="w-4 h-4"></i>
+			</button>
+		</div>
+	</div>
 
-    <div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-        <div class="overflow-x-auto">
-            <table class="w-full text-left text-sm text-gray-600">
-                <thead class="bg-gray-50 text-gray-500 uppercase text-xs font-semibold">
-                    <tr>
-                        <th class="px-6 py-4">Post</th>
-                        <th class="px-6 py-4">Author</th>
-                        <th class="px-6 py-4">Status</th>
-                        <th class="px-6 py-4">Date</th>
-                        <th class="px-6 py-4 text-right">Moderation</th>
-                    </tr>
-                </thead>
-                <tbody class="divide-y divide-gray-200">
-                    {% for post in posts %}
-                        <tr class="hover:bg-gray-50 transition-colors">
-                            <td class="px-6 py-4">
-                                <div class="font-medium text-gray-900 mb-1">{{ post.title }}</div>
-                                <div class="text-xs text-gray-500 line-clamp-1">{{ post.description }}</div>
-                            </td>
-                            <td class="px-6 py-4">
-                                <div class="flex items-center gap-2">
-                                    <div class="avatar placeholder">
-                                        <div class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 text-xs">
-                                            <span>{{ post.user.email|first|upper }}</span>
-                                        </div>
-                                    </div>
-                                    <span class="text-xs font-medium">{{ post.user.email }}</span>
-                                </div>
-                            </td>
-                            <td class="px-6 py-4">
-                                {% if post.status == 'published' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                        Published
-                                    </span>
-                                {% elseif post.status == 'draft' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                                        Draft
-                                    </span>
-                                {% elseif post.status == 'rejected' %}
-                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                        Rejected
-                                    </span>
-                                {% else %}
-                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
-                                        Pending
-                                    </span>
-                                {% endif %}
-                            </td>
-                            <td class="px-6 py-4 text-xs">
-                                {{ post.createdAt|date('M d, Y') }}
-                            </td>
-                            <td class="px-6 py-4 text-right">
-                                <div class="flex justify-end gap-2">
-                                    <a href="{{ path('admin_post_preview', {id: post.id}) }}" class="btn btn-xs btn-circle btn-ghost text-blue-600 hover:bg-blue-50" title="Preview">
-                                        <i data-lucide="eye" class="w-4 h-4"></i>
-                                    </a>
+	<div class="admin-table-container -mx-4 md:-mx-8">
+		<table class="w-full text-left text-sm text-gray-600 border-collapse">
+			<thead class="text-gray-500 uppercase text-xs font-bold sticky top-16 z-40 bg-gray-50 border-b border-gray-200">
+				<tr>
+					<th class="px-6 py-4">#</th>
+					<th class="px-6 py-4">Post</th>
+					<th class="px-6 py-4">Author</th>
+					<th class="px-6 py-4">Status</th>
+					<th class="px-6 py-4">Date</th>
+					<th class="px-6 py-4 text-right">Moderation</th>
+				</tr>
+			</thead>
+			<tbody class="divide-y divide-gray-200 bg-white">
+				{% for post in posts %}
+					<tr class="hover:bg-gray-50 transition-colors">
+						<td class="px-6 py-4 font-mono text-xs text-gray-400">{{ post.id }}</td>
+						<td class="px-6 py-4 max-w-sm">
+							<div class="font-medium text-gray-900 mb-1 truncate" title="{{ post.title }}">{{ post.title }}</div>
+							<div class="text-xs text-gray-500 line-clamp-1 truncate-2-lines">{{ post.description }}</div>
+						</td>
+						<td class="px-6 py-4">
+							<div class="flex items-center gap-2">
+								<div class="avatar placeholder">
+									<div class="bg-gray-100 text-gray-600 rounded-full w-6 h-6 text-xs">
+										<span>{{ post.user.email|first|upper }}</span>
+									</div>
+								</div>
+								<span class="text-xs font-medium">{{ post.user.email }}</span>
+							</div>
+						</td>
+						<td class="px-6 py-4">
+							{% if post.status == 'published' %}
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+									Published
+								</span>
+							{% elseif post.status == 'draft' %}
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+									Draft
+								</span>
+							{% elseif post.status == 'rejected' %}
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+									Rejected
+								</span>
+							{% else %}
+								<span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+									Pending
+								</span>
+							{% endif %}
+						</td>
+						<td class="px-6 py-4 text-xs whitespace-nowrap">
+							{{ post.createdAt|date('M d, Y') }}
+						</td>
+						<td class="px-6 py-4 text-right">
+							<div class="dropdown dropdown-bottom dropdown-end">
+								<label tabindex="0" class="btn btn-ghost btn-xs btn-circle">
+									<i data-lucide="more-vertical" class="w-4 h-4 text-gray-400"></i>
+								</label>
+								<ul tabindex="0" class="dropdown-content z-[30] menu p-2 shadow-lg bg-white border border-gray-200 rounded-box w-40">
+									<li>
+										<a href="{{ path('admin_post_preview', {id: post.id}) }}" class="text-blue-600 flex items-center gap-2 py-2">
+											<i data-lucide="eye" class="w-4 h-4"></i>
+											View
+										</a>
+									</li>
+									<li>
+										<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" class="p-0">
+											<input type="hidden" name="status" value="published">
+											<button type="submit" class="w-full text-left text-green-600 flex items-center gap-2 px-4 py-2 hover:bg-green-50 rounded-md">
+												<i data-lucide="check" class="w-4 h-4"></i>
+												Publish
+											</button>
+										</form>
+									</li>
+									<li>
+										<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" class="p-0">
+											<input type="hidden" name="status" value="rejected">
+											<button type="submit" class="w-full text-left text-orange-600 flex items-center gap-2 px-4 py-2 hover:bg-orange-50 rounded-md">
+												<i data-lucide="x" class="w-4 h-4"></i>
+												Reject
+											</button>
+										</form>
+									</li>
+									<div class="divider my-1"></div>
+									<li>
+										<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" class="p-0" onsubmit="return confirm('Delete this post permanently?');">
+											<input type="hidden" name="status" value="deleted">
+											<button type="submit" class="w-full text-left text-red-600 flex items-center gap-2 px-4 py-2 hover:bg-red-50 rounded-md">
+												<i data-lucide="trash-2" class="w-4 h-4"></i>
+												Delete
+											</button>
+										</form>
+									</li>
+								</ul>
+							</div>
+						</td>
+					</tr>
+				{% else %}
+					<tr>
+						<td colspan="5" class="px-6 py-8 text-center text-gray-500">
+							No posts to moderate.
+						</td>
+					</tr>
+				{% endfor %}
+			</tbody>
+		</table>
+	</div>
+</div>
 
-                                    <form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
-                                        <input type="hidden" name="status" value="published">
-                                        <button type="submit" class="btn btn-xs btn-circle btn-ghost text-green-600 hover:bg-green-50" title="Approve & Publish">
-                                            <i data-lucide="check" class="w-4 h-4"></i>
-                                        </button>
-                                    </form>
-                                    
-                                     <form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST">
-                                        <input type="hidden" name="status" value="rejected">
-                                        <button type="submit" class="btn btn-xs btn-circle btn-ghost text-orange-600 hover:bg-orange-50" title="Reject">
-                                            <i data-lucide="x" class="w-4 h-4"></i>
-                                        </button>
-                                    </form>
+{% if totalPages > 1 %}
+	<div class="flex items-center justify-between mt-8">
+		<div class="flex-1 flex justify-between sm:hidden">
+			{% if currentPage > 1 %}
+				<a href="{{ path('admin_posts', {page: currentPage - 1}) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+					Previous
+				</a>
+			{% endif %}
+			{% if currentPage < totalPages %}
+				<a href="{{ path('admin_posts', {page: currentPage + 1}) }}" class="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+					Next
+				</a>
+			{% endif %}
+		</div>
+		<div class="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+			<div>
+				<p class="text-sm text-gray-700">
+					Showing
+					<span class="font-medium">{{ (currentPage - 1) * 10 + 1 }}</span>
+					to
+					<span class="font-medium">{{ min(currentPage * 10, totalItems) }}</span>
+					of
+					<span class="font-medium">{{ totalItems }}</span>
+					results
+				</p>
+			</div>
+			<div>
+				<nav class="relative z-0 inline-flex rounded-md shadow-sm -space-x-px" aria-label="Pagination">
+					{% if currentPage > 1 %}
+						<a href="{{ path('admin_posts', {page: currentPage - 1}) }}" class="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+							<span class="sr-only">Previous</span>
+							<i data-lucide="chevron-left" class="w-5 h-5"></i>
+						</a>
+					{% endif %}
 
-                                     <form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" onsubmit="return confirm('Delete this post permanently?');">
-                                         <input type="hidden" name="status" value="deleted"> {# Logic for delete needed in controller if not exists #}
-                                        <button type="submit" class="btn btn-xs btn-circle btn-ghost text-red-600 hover:bg-red-50" title="Delete">
-                                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                        </button>
-                                    </form>
-                                </div>
-                            </td>
-                        </tr>
-                    {% else %}
-                        <tr>
-                            <td colspan="5" class="px-6 py-8 text-center text-gray-500">
-                                No posts to moderate.
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-{% endblock %}
+					{% for i in 1..totalPages %}
+						<a href="{{ path('admin_posts', {page: i}) }}" class="relative inline-flex items-center px-4 py-2 border {{ i == currentPage ? 'bg-teal-50 border-teal-500 text-teal-600 z-10' : 'border-gray-300 bg-white text-gray-500 hover:bg-gray-50' }} text-sm font-medium">
+							{{ i }}
+						</a>
+					{% endfor %}
+
+					{% if currentPage < totalPages %}
+						<a href="{{ path('admin_posts', {page: currentPage + 1}) }}" class="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50">
+							<span class="sr-only">Next</span>
+							<i data-lucide="chevron-right" class="w-5 h-5"></i>
+						</a>
+					{% endif %}
+				</nav>
+			</div>
+		</div>
+	</div>
+{% endif %}{% endblock %}

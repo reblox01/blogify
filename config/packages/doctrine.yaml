@@ -30,7 +30,11 @@ doctrine:
             one_time_token_type: string
             flow_state: string
             regclass: string
+            regrole: string
+            regconfig: string
+            regnamespace: string
             _user_defined_filter: string
+        schema_filter: '~^(?!auth\.|realtime\.|storage\.|graphql\.|graphql_public\.|vault\.|pgmq|extensions\.|seq_schema_version).*~'
     orm:
         auto_generate_proxy_classes: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware

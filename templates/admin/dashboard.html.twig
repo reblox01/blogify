@@ -78,9 +78,9 @@
 	</div>
 
 	{# Recent Activity / Table #}
-	<div class="bg-white border border-gray-200 rounded-xl shadow-sm overflow-hidden">
-		<div class="px-6 py-4 border-b border-gray-200 flex justify-between items-center bg-gray-50/50">
-			<h3 class="font-semibold text-gray-900">Recent Posts</h3>
+	<div class="mb-6">
+		<div class="flex justify-between items-center mb-4">
+			<h3 class="font-bold text-gray-900">Recent Posts</h3>
 			<a href="{{ path('admin_posts') }}" class="text-sm font-medium text-teal-600 hover:text-teal-700 hover:underline">View All</a>
 		</div>
 		<div class="overflow-x-auto">
@@ -97,7 +97,7 @@
 				<tbody class="divide-y divide-gray-100">
 					{% for post in recentPosts %}
 						<tr class="hover:bg-gray-50 transition-colors">
-							<td class="px-6 py-4 font-medium text-gray-900">{{ post.title }}</td>
+							<td class="px-6 py-4 font-medium text-gray-900 max-w-[200px] truncate" title="{{ post.title }}">{{ post.title }}</td>
 							<td class="px-6 py-4">
 								<div class="flex items-center gap-2">
 									<div class="avatar placeholder">
@@ -126,9 +126,49 @@
 									</span>
 								{% endif %}
 							</td>
-							<td class="px-6 py-4 text-gray-400">{{ post.createdAt|date("M d, Y") }}</td>
+							<td class="px-6 py-4 text-gray-400 whitespace-nowrap">{{ post.createdAt|date("M d, Y") }}</td>
 							<td class="px-6 py-4 text-right">
-								<a href="{{ path('admin_post_preview', {id: post.id}) }}" class="btn btn-ghost btn-xs">View</a>
+								<div class="dropdown dropdown-bottom dropdown-end">
+									<label tabindex="0" class="btn btn-ghost btn-xs btn-circle">
+										<i data-lucide="more-vertical" class="w-4 h-4 text-gray-400"></i>
+									</label>
+									<ul tabindex="0" class="dropdown-content z-[20] menu p-2 shadow-lg bg-white border border-gray-100 rounded-box w-40">
+										<li>
+											<a href="{{ path('admin_post_preview', {id: post.id}) }}" class="text-blue-600 flex items-center gap-2 py-2">
+												<i data-lucide="eye" class="w-4 h-4"></i>
+												View
+											</a>
+										</li>
+										<li>
+											<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" class="p-0">
+												<input type="hidden" name="status" value="published">
+												<button type="submit" class="w-full text-left text-green-600 flex items-center gap-2 px-4 py-2 hover:bg-green-50 rounded-md">
+													<i data-lucide="check" class="w-4 h-4"></i>
+													Publish
+												</button>
+											</form>
+										</li>
+										<li>
+											<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" class="p-0">
+												<input type="hidden" name="status" value="rejected">
+												<button type="submit" class="w-full text-left text-orange-600 flex items-center gap-2 px-4 py-2 hover:bg-orange-50 rounded-md">
+													<i data-lucide="x" class="w-4 h-4"></i>
+													Reject
+												</button>
+											</form>
+										</li>
+										<div class="divider my-1"></div>
+										<li>
+											<form action="{{ path('admin_post_status', {id: post.id}) }}" method="POST" class="p-0" onsubmit="return confirm('Delete this post permanently?');">
+												<input type="hidden" name="status" value="deleted">
+												<button type="submit" class="w-full text-left text-red-600 flex items-center gap-2 px-4 py-2 hover:bg-red-50 rounded-md">
+													<i data-lucide="trash-2" class="w-4 h-4"></i>
+													Delete
+												</button>
+											</form>
+										</li>
+									</ul>
+								</div>
 							</td>
 						</tr>
 					{% else %}
@@ -139,5 +179,4 @@
 				</tbody>
 			</table>
 		</div>
-	</div>
-{% endblock %}
+	{% endblock %}

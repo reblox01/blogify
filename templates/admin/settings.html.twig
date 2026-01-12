@@ -1,0 +1,65 @@
+{% extends 'admin/layout.html.twig' %}
+
+{% block title %}Settings - Blogify
+{% endblock %}
+
+{% block admin_content %}
+	<div class="max-w-4xl mx-auto">
+		<div class="mb-8">
+			<h1 class="text-2xl font-bold text-gray-900">Platform Settings</h1>
+			<p class="text-gray-500 text-sm mt-1">Configure your blog platform behavior</p>
+		</div>
+
+		<div
+			class="grid grid-cols-1 gap-8">
+			{# General Settings #}
+			<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden">
+				<div class="p-6 border-b border-gray-100 flex items-center gap-3">
+					<div class="p-2 bg-teal-50 text-teal-600 rounded-lg">
+						<i data-lucide="settings-2" class="w-5 h-5"></i>
+					</div>
+					<h2 class="font-bold text-gray-900">General Configuration</h2>
+				</div>
+				<div class="p-8 space-y-6">
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="font-bold text-gray-800">Auto-publish Authors</p>
+							<p class="text-sm text-gray-500">Posts from verified authors bypass moderation</p>
+						</div>
+						<input type="checkbox" class="toggle toggle-teal"/>
+					</div>
+					<div class="divider"></div>
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="font-bold text-gray-800">Allow Comments</p>
+							<p class="text-sm text-gray-500">Enable or disable commenting across all posts</p>
+						</div>
+						<input type="checkbox" class="toggle toggle-teal" checked/>
+					</div>
+					<div class="divider"></div>
+					<div class="flex items-center justify-between">
+						<div>
+							<p class="font-bold text-gray-800">Registration Open</p>
+							<p class="text-sm text-gray-500">Allow new users to sign up for accounts</p>
+						</div>
+						<input type="checkbox" class="toggle toggle-teal" checked/>
+					</div>
+				</div>
+			</div>
+
+			{# UI Settings #}
+			<div class="bg-white border border-gray-200 rounded-2xl shadow-sm overflow-hidden opacity-75">
+				<div class="p-6 border-b border-gray-100 flex items-center gap-3">
+					<div class="p-2 bg-blue-50 text-blue-600 rounded-lg">
+						<i data-lucide="palette" class="w-5 h-5"></i>
+					</div>
+					<h2 class="font-bold text-gray-900 text-opacity-50">Theme & UI (Coming Soon)</h2>
+				</div>
+				<div class="p-8 text-center py-20">
+					<i data-lucide="lock" class="w-12 h-12 text-gray-300 mx-auto mb-4"></i>
+					<p class="text-gray-400">Deep customization options will be available in the next version.</p>
+				</div>
+			</div>
+		</div>
+	</div>
+{% endblock %}

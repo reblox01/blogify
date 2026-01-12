@@ -47,11 +47,44 @@ class Post
     #[ORM\Column(name: 'published_at', type: 'datetime', nullable: true)]
     private ?\DateTimeInterface $publishedAt = null;
 
+    #[ORM\OneToMany(mappedBy: 'post', targetEntity: Annotation::class, orphanRemoval: true)]
+    private $annotations;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
+        $this->annotations = new \Doctrine\Common\Collections\ArrayCollection();
     }
 
+    /**
+     * @return \Doctrine\Common\Collections\Collection<int, Annotation>
+     */
+    public function getAnnotations(): \Doctrine\Common\Collections\Collection
+    {
+        return $this->annotations;
+    }
+
+    public function addAnnotation(Annotation $annotation): self
+    {
+        if (!$this->annotations->contains($annotation)) {
+            $this->annotations->add($annotation);
+            $annotation->setPost($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnnotation(Annotation $annotation): self
+    {
+        if ($this->annotations->removeElement($annotation)) {
+            // set the owning side to null (unless already changed)
+            if ($annotation->getPost() === $this) {
+                $annotation->setPost(null);
+            }
+        }
+
+        return $this;
+    }
     public function getId(): ?int
     {
         return $this->id;

@@ -41,12 +41,45 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: Post::class, mappedBy: 'user')]
     private Collection $posts;
 
+    #[ORM\OneToMany(mappedBy: 'author', targetEntity: Annotation::class, orphanRemoval: true)]
+    private Collection $annotations;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
         $this->posts = new ArrayCollection();
+        $this->annotations = new ArrayCollection();
     }
 
+    /**
+     * @return Collection<int, Annotation>
+     */
+    public function getAnnotations(): Collection
+    {
+        return $this->annotations;
+    }
+
+    public function addAnnotation(Annotation $annotation): self
+    {
+        if (!$this->annotations->contains($annotation)) {
+            $this->annotations->add($annotation);
+            $annotation->setAuthor($this);
+        }
+
+        return $this;
+    }
+
+    public function removeAnnotation(Annotation $annotation): self
+    {
+        if ($this->annotations->removeElement($annotation)) {
+            // set the owning side to null (unless already changed)
+            if ($annotation->getAuthor() === $this) {
+                $annotation->setAuthor(null);
+            }
+        }
+
+        return $this;
+    }
     public function getId(): ?int
     {
         return $this->id;

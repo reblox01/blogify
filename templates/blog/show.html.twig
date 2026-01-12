@@ -1,22 +1,37 @@
 {% extends 'base.html.twig' %}
 
 {% block body %}
-    <div class="container mx-auto py-8">
-        <h1 class="text-4xl font-extrabold text-gray-900 mb-4">{{ post.title }}</h1>
-        <p class="text-gray-500 mb-8 pb-8 border-b border-gray-100 flex items-center gap-2">
-            <span class="font-medium text-gray-900">By {{ post.user.name ?? 'Unknown' }}</span>
-            <span class="text-gray-300">•</span>
-            <span>{{ post.createdAt ? post.createdAt|date('M d, Y') : '' }}</span>
-        </p>
+	<div class="container mx-auto py-8">
+		<h1 class="text-4xl font-extrabold text-gray-900 mb-4">{{ post.title }}</h1>
+		<p class="text-gray-500 mb-8 pb-8 border-b border-gray-100 flex items-center gap-2">
+			<span class="font-medium text-gray-900">By
+				{{ post.user.name ?? 'Unknown' }}</span>
+			<span class="text-gray-300">•</span>
+			<span>{{ post.createdAt ? post.createdAt|date('M d, Y') : '' }}</span>
+		</p>
 
-        {% if post.imageData %}
-            <div class="mb-10 rounded-2xl overflow-hidden shadow-lg aspect-video">
-                <img src="{{ path('post_image', {id: post.id}) }}" class="w-full h-full object-cover" alt="{{ post.title }}">
-            </div>
-        {% endif %}
-        <div class="prose">
-            {{ post.description|raw }}
-        </div>
-    </div>
+		{% if post.imageData %}
+			<div class="mb-10 rounded-2xl overflow-hidden shadow-lg aspect-video">
+				<img src="{{ path('post_image', {id: post.id}) }}" class="w-full h-full object-cover" alt="{{ post.title }}">
+			</div>
+		{% endif %}
+		<div class="prose prose-teal lg:prose-xl max-w-none text-gray-700 leading-relaxed" id="blog-content">
+			{{ post.description|raw }}
+		</div>
+
+		<style>
+			#blog-content a {
+				color: #14b8a6;
+				text-decoration: underline;
+				text-underline-offset: 4px;
+				font-weight: 700;
+				transition: all 0.2s;
+			}
+			#blog-content a:hover {
+				color: #0d9488;
+				background-color: rgba(20, 184, 166, 0.05);
+				border-radius: 4px;
+			}
+		</style>
+	</div>
 {% endblock %}
-

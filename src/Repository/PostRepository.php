@@ -38,4 +38,14 @@ class PostRepository extends ServiceEntityRepository
             $this->getEntityManager()->flush();
         }
     }
+    public function getPaginatedPosts(int $page = 1, int $limit = 10): \Doctrine\ORM\Tools\Pagination\Paginator
+    {
+        $query = $this->createQueryBuilder('p')
+            ->orderBy('p.createdAt', 'DESC')
+            ->getQuery()
+            ->setFirstResult(($page - 1) * $limit)
+            ->setMaxResults($limit);
+
+        return new \Doctrine\ORM\Tools\Pagination\Paginator($query);
+    }
 }

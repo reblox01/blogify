@@ -4,12 +4,15 @@ namespace App\Controller;
 
 use App\Entity\Post;
 use App\Entity\User;
+use App\Entity\Annotation;
 use App\Repository\PostRepository;
 use App\Repository\UserRepository;
+use App\Repository\AnnotationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -24,7 +27,7 @@ class AdminController extends AbstractController
         // Statistics
         $totalUsers = $userRepository->count([]);
         $totalPosts = $postRepository->count([]);
-        $pendingPosts = $postRepository->count(['status' => 'draft']); // Assuming 'draft' acts as pending for now, or add 'pending' status
+        $pendingPosts = $postRepository->count(['status' => 'draft']);
         $publishedPosts = $postRepository->count(['status' => 'published']);
 
         // Recent posts
@@ -37,6 +40,37 @@ class AdminController extends AbstractController
             'publishedPosts' => $publishedPosts,
             'recentPosts' => $recentPosts,
         ]);
+    }
+
+    #[Route('/profile', name: 'profile')]
+    public function profile(Request $request, EntityManagerInterface $em, UserPasswordHasherInterface $hasher): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        /** @var User $user */
+        $user = $this->getUser();
+
+        if ($request->isMethod('POST')) {
+            $user->setName($request->request->get('name'));
+            $user->setBiography($request->request->get('biography'));
+
+            if ($request->request->get('password')) {
+                $user->setPassword($hasher->hashPassword($user, $request->request->get('password')));
+            }
+
+            $em->flush();
+            $this->addFlash('success', 'Profile updated successfully.');
+        }
+
+        return $this->render('admin/profile.html.twig', [
+            'user' => $user,
+        ]);
+    }
+
+    #[Route('/settings', name: 'settings')]
+    public function settings(): Response
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+        return $this->render('admin/settings.html.twig');
     }
 
     #[Route('/users', name: 'users')]
@@ -84,14 +118,21 @@ class AdminController extends AbstractController
     }
 
     #[Route('/posts', name: 'posts')]
-    public function posts(PostRepository $postRepository): Response
+    public function posts(PostRepository $postRepository, Request $request): Response
     {
         $this->denyAccessUnlessGranted('ROLE_ADMIN');
 
-        $posts = $postRepository->findBy([], ['createdAt' => 'DESC']);
+        $page = $request->query->getInt('page', 1);
+        $limit = 10;
+        $paginator = $postRepository->getPaginatedPosts($page, $limit);
+        $totalItems = count($paginator);
+        $totalPages = ceil($totalItems / $limit);
 
         return $this->render('admin/posts/index.html.twig', [
-            'posts' => $posts,
+            'posts' => $paginator,
+            'currentPage' => $page,
+            'totalPages' => $totalPages,
+            'totalItems' => $totalItems,
         ]);
     }
 
@@ -126,5 +167,44 @@ class AdminController extends AbstractController
         return $this->render('admin/posts/preview.html.twig', [
             'post' => $post,
         ]);
+    }
+
+    #[Route('/posts/{id}/annotate', name: 'post_annotate', methods: ['POST'])]
+    public function addAnnotation(Post $post, Request $request, EntityManagerInterface $em): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $data = json_decode($request->getContent(), true);
+
+        $annotation = new Annotation();
+        $annotation->setPost($post);
+        $annotation->setAuthor($this->getUser());
+        $annotation->setContent($data['content'] ?? '');
+        $annotation->setSelectedText($data['selectedText'] ?? null);
+        $annotation->setContextData($data['contextData'] ?? []);
+
+        $em->persist($annotation);
+        $em->flush();
+
+        return new JsonResponse([
+            'status' => 'success',
+            'annotation' => [
+                'id' => $annotation->getId(),
+                'content' => $annotation->getContent(),
+                'authorName' => $annotation->getAuthor()->getName(),
+                'createdAt' => $annotation->getCreatedAt()->format('M d, Y H:i'),
+            ]
+        ]);
+    }
+
+    #[Route('/annotations/{id}/resolve', name: 'annotation_resolve', methods: ['POST'])]
+    public function resolveAnnotation(Annotation $annotation, EntityManagerInterface $em): JsonResponse
+    {
+        $this->denyAccessUnlessGranted('ROLE_ADMIN');
+
+        $annotation->setResolved(true);
+        $em->flush();
+
+        return new JsonResponse(['status' => 'success']);
     }
 }
