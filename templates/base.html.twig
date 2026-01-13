@@ -103,6 +103,113 @@ themes: ["light"]
 				transform: translateY(-4px);
 				box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
 			}
+
+			/* Scroll Reveal Animations */
+			.scroll-reveal {
+				opacity: 0;
+				transition: opacity 0.6s ease, transform 0.6s ease;
+			}
+			.scroll-reveal.revealed {
+				opacity: 1;
+			}
+
+			.fade-in-up {
+				transform: translateY(30px);
+			}
+			.fade-in-up.revealed {
+				transform: translateY(0);
+			}
+
+			.fade-in-down {
+				transform: translateY(-30px);
+			}
+			.fade-in-down.revealed {
+				transform: translateY(0);
+			}
+
+			.fade-in-left {
+				transform: translateX(-30px);
+			}
+			.fade-in-left.revealed {
+				transform: translateX(0);
+			}
+
+			.fade-in-right {
+				transform: translateX(30px);
+			}
+			.fade-in-right.revealed {
+				transform: translateX(0);
+			}
+
+			/* Staggered animations */
+			.stagger-1 { transition-delay: 0.1s; }
+			.stagger-2 { transition-delay: 0.2s; }
+			.stagger-3 { transition-delay: 0.3s; }
+			.stagger-4 { transition-delay: 0.4s; }
+			.stagger-5 { transition-delay: 0.5s; }
+			.stagger-6 { transition-delay: 0.6s; }
+
+			/* Parallax effect */
+			.parallax-bg {
+				transition: transform 0.3s ease-out;
+			}
+
+			/* Counter animation */
+			@keyframes countUp {
+				from { opacity: 0; transform: translateY(20px); }
+				to { opacity: 1; transform: translateY(0); }
+			}
+			.counter-animate {
+				animation: countUp 0.6s ease-out;
+			}
+
+			/* Gradient text effect */
+			.gradient-text {
+				background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+
+			/* Enhanced card hover with scale */
+			.hover-scale {
+				transition: transform 0.3s ease, box-shadow 0.3s ease;
+			}
+			.hover-scale:hover {
+				transform: scale(1.03);
+				box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.15);
+			}
+
+			/* Text Rotation Animation */
+			.text-rotate {
+				display: inline-block;
+				position: relative;
+				vertical-align: top;
+				min-width: 200px;
+			}
+			.text-rotate .word {
+				position: absolute;
+				left: 0;
+				top: 0;
+				opacity: 0;
+				animation: rotateWord 12s infinite;
+				background: linear-gradient(135deg, #0d9488 0%, #06b6d4 100%);
+				-webkit-background-clip: text;
+				-webkit-text-fill-color: transparent;
+				background-clip: text;
+			}
+			.text-rotate .word:nth-child(1) { animation-delay: 0s; }
+			.text-rotate .word:nth-child(2) { animation-delay: 3s; }
+			.text-rotate .word:nth-child(3) { animation-delay: 6s; }
+			.text-rotate .word:nth-child(4) { animation-delay: 9s; }
+
+			@keyframes rotateWord {
+				0% { opacity: 0; transform: translateY(100%); }
+				2% { opacity: 1; transform: translateY(0); }
+				23% { opacity: 1; transform: translateY(0); }
+				25% { opacity: 0; transform: translateY(-100%); }
+				100% { opacity: 0; transform: translateY(-100%); }
+			}
 		</style>
 	</head>
 	<body class="bg-gray-50 text-gray-900 antialiased min-h-screen flex flex-col">
@@ -207,6 +314,76 @@ submitBtn.classList.add('btn-loading');
 }, 50);
 }
 });
+});
+
+// Scroll Reveal Animation System
+const scrollRevealObserver = new IntersectionObserver((entries) => {
+	entries.forEach(entry => {
+		if (entry.isIntersecting) {
+			entry.target.classList.add('revealed');
+		}
+	});
+}, {
+	threshold: 0.1,
+	rootMargin: '0px 0px -50px 0px'
+});
+
+// Observe all scroll-reveal elements
+document.addEventListener('DOMContentLoaded', () => {
+	document.querySelectorAll('.scroll-reveal').forEach(el => {
+		scrollRevealObserver.observe(el);
+	});
+
+	// Counter Animation
+	const animateCounter = (element) => {
+		const target = parseInt(element.getAttribute('data-target'));
+		const duration = 2000;
+		const step = target / (duration / 16);
+		let current = 0;
+
+		const updateCounter = () => {
+			current += step;
+			if (current < target) {
+				element.textContent = Math.floor(current).toLocaleString();
+				requestAnimationFrame(updateCounter);
+			} else {
+				element.textContent = target.toLocaleString();
+			}
+		};
+
+		element.classList.add('counter-animate');
+		updateCounter();
+	};
+
+	// Counter Observer
+	const counterObserver = new IntersectionObserver((entries) => {
+		entries.forEach(entry => {
+			if (entry.isIntersecting && !entry.target.classList.contains('counted')) {
+				entry.target.classList.add('counted');
+				animateCounter(entry.target);
+			}
+		});
+	}, { threshold: 0.5 });
+
+	document.querySelectorAll('.counter').forEach(counter => {
+		counterObserver.observe(counter);
+	});
+
+	// Parallax Scroll Effect
+	let ticking = false;
+	window.addEventListener('scroll', () => {
+		if (!ticking) {
+			window.requestAnimationFrame(() => {
+				const scrolled = window.pageYOffset;
+				document.querySelectorAll('.parallax-bg').forEach(el => {
+					const speed = el.getAttribute('data-speed') || 0.5;
+					el.style.transform = `translateY(${scrolled * speed}px)`;
+				});
+				ticking = false;
+			});
+			ticking = true;
+		}
+	});
 });
 		</script>
 	</body>
