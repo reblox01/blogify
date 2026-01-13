@@ -2,36 +2,159 @@
 
 {% block body %}
 	<div class="container mx-auto py-8">
-		<h1 class="text-4xl font-extrabold text-gray-900 mb-4">{{ post.title }}</h1>
-		<p class="text-gray-500 mb-8 pb-8 border-b border-gray-100 flex items-center gap-2">
-			<span class="font-medium text-gray-900">By
-				{{ post.user.name ?? 'Unknown' }}</span>
-			<span class="text-gray-300">•</span>
-			<span>{{ post.createdAt ? post.createdAt|date('M d, Y') : '' }}</span>
-		</p>
+		<div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+			{# Main post column (centered box) #}
+			<main class="lg:col-span-2">
+				<article class="bg-white border border-gray-100 rounded-2xl shadow-sm p-8">
+					<header class="mb-6">
+						<h1 class="text-4xl font-extrabold text-gray-900 mb-2">{{ post.title }}</h1>
+						<p class="text-gray-500 text-sm flex items-center gap-2">
+							<span class="font-medium text-gray-900">By {{ post.user.name ?? 'Unknown' }}</span>
+							<span class="text-gray-300">•</span>
+							<span>{{ post.createdAt ? post.createdAt|date('M d, Y') : '' }}</span>
+						</p>
+					</header>
 
-		{% if post.imageData %}
-			<div class="mb-10 rounded-2xl overflow-hidden shadow-lg aspect-video">
-				<img src="{{ path('post_image', {id: post.id}) }}" class="w-full h-full object-cover" alt="{{ post.title }}">
-			</div>
-		{% endif %}
-		<div class="prose prose-teal lg:prose-xl max-w-none text-gray-700 leading-relaxed" id="blog-content">
-			{{ post.description|raw }}
+					{% if post.imageData %}
+						<div class="mb-6 rounded-xl overflow-hidden shadow-md aspect-video">
+							<img src="{{ path('post_image', {id: post.id}) }}" class="w-full h-full object-cover" alt="{{ post.title }}">
+						</div>
+					{% endif %}
+
+					<div class="prose prose-teal lg:prose-xl text-gray-700 leading-relaxed" id="blog-content">
+						{{ post.description|raw }}
+					</div>
+
+					{# Social share + copy link #}
+					<div class="mt-8 flex items-center justify-between gap-4">
+						<div class="flex items-center gap-3">
+							<span class="text-sm text-gray-500 font-medium">Share:</span>
+							<a href="https://twitter.com/intent/tweet?text={{ post.title|url_encode }}&url={{ absolute_url(path('blog_show',{slug:post.slug}))|url_encode }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+								<i data-lucide="twitter" class="w-4 h-4"></i>
+							</a>
+							<a href="https://www.facebook.com/sharer/sharer.php?u={{ absolute_url(path('blog_show',{slug:post.slug}))|url_encode }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+								<i data-lucide="facebook" class="w-4 h-4"></i>
+							</a>
+							<a href="https://www.linkedin.com/sharing/share-offsite/?url={{ absolute_url(path('blog_show',{slug:post.slug}))|url_encode }}" target="_blank" rel="noopener" class="btn btn-ghost btn-sm">
+								<i data-lucide="linkedin" class="w-4 h-4"></i>
+							</a>
+						</div>
+
+						<div class="flex items-center gap-2">
+							<button type="button" onclick="copyPostLink()" class="btn btn-outline btn-sm">
+								Copy link
+							</button>
+						</div>
+					</div>
+
+					<style>
+						#blog-content a {
+							color: #14b8a6;
+							text-decoration: underline;
+							text-underline-offset: 4px;
+							font-weight: 700;
+							transition: all 0.2s;
+						}
+						#blog-content a:hover {
+							color: #0d9488;
+							background-color: rgba(20, 184, 166, 0.05);
+							border-radius: 4px;
+						}
+					</style>
+
+					{# Comments section #}
+					<section class="mt-10">
+						<h3 class="text-xl font-semibold mb-4">Comments ({{ comments|length }})</h3>
+
+						{% if comments is not empty %}
+							<div class="space-y-4">
+								{% for comment in comments %}
+									<div class="p-4 bg-gray-50 rounded-lg border border-gray-100">
+										<div class="flex items-center justify-between mb-2">
+											<div class="text-sm font-medium text-gray-900">{{ comment.user.name }}</div>
+											<div class="text-xs text-gray-400">{{ comment.createdAt ? comment.createdAt|date('M d, Y H:i') : '' }}</div>
+										</div>
+										<p class="text-gray-700">{{ comment.content }}</p>
+									</div>
+								{% endfor %}
+							</div>
+						{% else %}
+							<p class="text-sm text-gray-500 mb-4">No comments yet — be the first to comment.</p>
+						{% endif %}
+
+						{# Comment form for authenticated users only #}
+						<div class="mt-6">
+							{% if app.user %}
+								{{ form_start(comment_form) }}
+									{{ form_widget(comment_form.content) }}
+									<div class="mt-3">
+										<button type="submit" class="btn btn-primary bg-teal-600 hover:bg-teal-700 border-none text-white">Post comment</button>
+									</div>
+								{{ form_end(comment_form) }}
+							{% else %}
+								<p class="text-sm text-gray-500">
+									<a href="{{ path('app_login') }}" class="text-teal-600 font-medium">Sign in</a> to leave a comment.
+								</p>
+							{% endif %}
+						</div>
+					</section>
+				</article>
+			</main>
+
+			{# Sidebar #}
+			<aside class="space-y-6">
+				<div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+					<h4 class="font-semibold mb-3">Search</h4>
+					<form action="{{ path('blog_index') }}" method="get" class="flex gap-2">
+						<input type="text" name="q" placeholder="Search posts..." class="input input-bordered w-full" />
+						<button type="submit" class="btn btn-ghost"><i data-lucide="search" class="w-4 h-4"></i></button>
+					</form>
+				</div>
+
+				<div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+					<h4 class="font-semibold mb-3">Categories</h4>
+					<div class="flex flex-wrap gap-2">
+						<a href="{{ path('blog_index') }}?category=development" class="badge badge-outline">Development</a>
+						<a href="{{ path('blog_index') }}?category=design" class="badge badge-outline">Design</a>
+						<a href="{{ path('blog_index') }}?category=product" class="badge badge-outline">Product</a>
+						<a href="{{ path('blog_index') }}?category=tutorials" class="badge badge-outline">Tutorials</a>
+					</div>
+				</div>
+
+				<div class="bg-white border border-gray-100 rounded-xl p-4 shadow-sm">
+					<h4 class="font-semibold mb-3">Quick links</h4>
+					<ul class="space-y-2 text-sm">
+						<li><a href="{{ path('blog_index') }}" class="hover:text-teal-600">All posts</a></li>
+						<li><a href="{{ path('app_home') }}" class="hover:text-teal-600">Home</a></li>
+					</ul>
+				</div>
+			</aside>
 		</div>
-
-		<style>
-			#blog-content a {
-				color: #14b8a6;
-				text-decoration: underline;
-				text-underline-offset: 4px;
-				font-weight: 700;
-				transition: all 0.2s;
-			}
-			#blog-content a:hover {
-				color: #0d9488;
-				background-color: rgba(20, 184, 166, 0.05);
-				border-radius: 4px;
-			}
-		</style>
 	</div>
+
+	<script>
+		function copyPostLink() {
+			const url = '{{ absolute_url(path('blog_show',{slug:post.slug})) }}';
+			if (navigator.clipboard && window.isSecureContext) {
+				navigator.clipboard.writeText(url).then(() => {
+					alert('Link copied to clipboard');
+				});
+			} else {
+				const textarea = document.createElement('textarea');
+				textarea.value = url;
+				textarea.style.position = 'fixed';
+				textarea.style.left = '-9999px';
+				document.body.appendChild(textarea);
+				textarea.focus();
+				textarea.select();
+				try {
+					document.execCommand('copy');
+					alert('Link copied to clipboard');
+				} catch (e) {
+					alert('Unable to copy link');
+				}
+				document.body.removeChild(textarea);
+			}
+		}
+	</script>
 {% endblock %}
